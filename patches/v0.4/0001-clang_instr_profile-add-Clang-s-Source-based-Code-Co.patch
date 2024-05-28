@@ -1,0 +1,695 @@
+From 2481dc0738d70ea7feeb58d8bf4f8b26301c3942 Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <wentaoz5@illinois.edu>
+Date: Mon, 27 May 2024 18:30:24 -0500
+Subject: [RFC PATCH 1/3] clang_instr_profile: add Clang's Source-based Code
+ Coverage support
+
+Clang's Source-based Code Coverage is underpinned by its instrumentation-based
+profiling. This patch adds the common clang_instr_profile support by
+implementing the debugfs entries for dumping profiles and resetting counters/
+bitmaps. Built atop that, this patch adds Source-based Code Coverage flags and
+kconfig options.
+
+Despite the name "clang_instr_profile" (which is a convention in LLVM source),
+this patch aims for *code coverage* required for high assurance (MC/DC) and
+contains no code for profiling or performance optimizations. This work reuses a
+portion of code from a previous effort [1], specifically its debugfs interface
+and the underlying profile processing, but discards all its PGO-specific parts,
+notably value profiling. To our end, we do instrumentation during compiler
+frontend, instead of IR; we care about counters and bitmaps, but not value
+profiling.
+
+[1] https://lore.kernel.org/linux-doc/20210407211704.367039-1-morbo@google.com/
+
+Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+---
+ Makefile                                      |   3 +
+ arch/Kconfig                                  |   1 +
+ arch/x86/Kconfig                              |   1 +
+ arch/x86/kernel/vmlinux.lds.S                 |   2 +
+ include/asm-generic/vmlinux.lds.h             |  38 +++
+ kernel/Makefile                               |   1 +
+ kernel/clang_instr_profile/Kconfig            |  53 ++++
+ kernel/clang_instr_profile/Makefile           |   5 +
+ .../clang_instr_profile/clang_instr_profile.h | 163 +++++++++++
+ kernel/clang_instr_profile/fs.c               | 258 ++++++++++++++++++
+ scripts/Makefile.lib                          |  10 +
+ scripts/mod/modpost.c                         |   2 +
+ 12 files changed, 537 insertions(+)
+ create mode 100644 kernel/clang_instr_profile/Kconfig
+ create mode 100644 kernel/clang_instr_profile/Makefile
+ create mode 100644 kernel/clang_instr_profile/clang_instr_profile.h
+ create mode 100644 kernel/clang_instr_profile/fs.c
+
+diff --git a/Makefile b/Makefile
+index 07a0f520f..a96654c7d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -685,6 +685,9 @@ endif # KBUILD_EXTMOD
+ # Defaults to vmlinux, but the arch makefile usually adds further targets
+ all: vmlinux
+ 
++CFLAGS_SCC_CLANG := -fprofile-instr-generate -fcoverage-mapping
++export CFLAGS_SCC_CLANG
++
+ CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage
+ ifdef CONFIG_CC_IS_GCC
+ CFLAGS_GCOV	+= -fno-tree-loop-im
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 2e2dc0975..470d641a7 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -1300,6 +1300,7 @@ config ARCH_HAS_PARANOID_L1D_FLUSH
+ 	bool
+ 
+ source "kernel/gcov/Kconfig"
++source "kernel/clang_instr_profile/Kconfig"
+ 
+ source "scripts/gcc-plugins/Kconfig"
+ 
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index cfb1edd25..01832cba5 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -108,6 +108,7 @@ config X86
+ 	select ARCH_SUPPORTS_KMAP_LOCAL_FORCE_MAP	if NR_CPUS <= 4096
+ 	select ARCH_SUPPORTS_LTO_CLANG
+ 	select ARCH_SUPPORTS_LTO_CLANG_THIN
++	select ARCH_SUPPORTS_INSTR_PROFILE_CLANG if X86_64
+ 	select ARCH_USE_BUILTIN_BSWAP
+ 	select ARCH_USE_MEMTEST
+ 	select ARCH_USE_QUEUED_RWLOCKS
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 351c604de..412ab19aa 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -199,6 +199,8 @@ SECTIONS
+ 
+ 	BUG_TABLE
+ 
++	INSTR_PROFILE_CLANG_DATA
++
+ 	ORC_UNWIND_TABLE
+ 
+ 	. = ALIGN(PAGE_SIZE);
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 8471717c5..69e177f77 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -325,6 +325,44 @@
+ #define DTPM_TABLE()
+ #endif
+ 
++#ifdef CONFIG_INSTR_PROFILE_CLANG
++#define INSTR_PROFILE_CLANG_DATA					\
++	__llvm_prf_data : AT(ADDR(__llvm_prf_data) - LOAD_OFFSET) {	\
++		__llvm_prf_start = .;					\
++		__llvm_prf_data_start = .;				\
++		*(__llvm_prf_data)					\
++		__llvm_prf_data_end = .;				\
++	}								\
++	__llvm_prf_cnts : AT(ADDR(__llvm_prf_cnts) - LOAD_OFFSET) {	\
++		__llvm_prf_cnts_start = .;				\
++		*(__llvm_prf_cnts)					\
++		__llvm_prf_cnts_end = .;				\
++	}								\
++	__llvm_prf_names : AT(ADDR(__llvm_prf_names) - LOAD_OFFSET) {	\
++		__llvm_prf_names_start = .;				\
++		*(__llvm_prf_names)					\
++		__llvm_prf_names_end = .;				\
++	}								\
++	__llvm_prf_bits : AT(ADDR(__llvm_prf_bits) - LOAD_OFFSET) {	\
++		__llvm_prf_bits_start = .;				\
++		*(__llvm_prf_bits)					\
++		__llvm_prf_bits_end = .;				\
++	}								\
++	__llvm_covfun : AT(ADDR(__llvm_covfun) - LOAD_OFFSET) {		\
++		__llvm_covfun_start = .;				\
++		*(__llvm_covfun)					\
++		__llvm_covfun_end = .;					\
++	}								\
++	__llvm_covmap : AT(ADDR(__llvm_covmap) - LOAD_OFFSET) {		\
++		__llvm_covmap_start = .;				\
++		*(__llvm_covmap)					\
++		__llvm_covmap_end = .;					\
++		__llvm_prf_end = .;					\
++	}
++#else
++#define INSTR_PROFILE_CLANG_DATA
++#endif
++
+ #define KERNEL_DTB()							\
+ 	STRUCT_ALIGN();							\
+ 	__dtb_start = .;						\
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 599cb9264..7877a89c7 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -116,6 +116,7 @@ obj-$(CONFIG_SHADOW_CALL_STACK) += scs.o
+ obj-$(CONFIG_HAVE_STATIC_CALL) += static_call.o
+ obj-$(CONFIG_HAVE_STATIC_CALL_INLINE) += static_call_inline.o
+ obj-$(CONFIG_CFI_CLANG) += cfi.o
++obj-$(CONFIG_INSTR_PROFILE_CLANG) += clang_instr_profile/
+ 
+ obj-$(CONFIG_PERF_EVENTS) += events/
+ 
+diff --git a/kernel/clang_instr_profile/Kconfig b/kernel/clang_instr_profile/Kconfig
+new file mode 100644
+index 000000000..aa4763121
+--- /dev/null
++++ b/kernel/clang_instr_profile/Kconfig
+@@ -0,0 +1,53 @@
++# SPDX-License-Identifier: GPL-2.0-only
++menu "Clang's instrumentation-based kernel profiling (EXPERIMENTAL)"
++
++config ARCH_SUPPORTS_INSTR_PROFILE_CLANG
++	bool
++
++config INSTR_PROFILE_CLANG
++	bool "Enable Clang's instrumentation-based kernel profiling"
++	depends on DEBUG_FS
++	depends on ARCH_SUPPORTS_INSTR_PROFILE_CLANG
++	depends on CC_IS_CLANG && CLANG_VERSION >= 120000
++	help
++	  This option enables Clang's instrumentation-based code profiling,
++	  which is useful in (1) Source-based Code Coverage measurement (2)
++	  profile guided kernel optimization.
++
++	  If unsure, say N.
++
++	  Note this option should be used together with SCC_CLANG (or PGO
++	  options coming in the future) to take effect.
++
++	  On a kernel compiled with this option, plus either coverage option or
++	  PGO option, run your test suites or application workload, and download
++	  the raw profile file from
++	  /sys/kernel/debug/clang_instr_profile/profraw. This file needs to be
++	  processed with llvm-profdata. It may be merged with other collected
++	  raw profiles.
++
++	  Copy the resulting profile file into vmlinux.profdata. It can then be
++	  fed to later pipelines of generating coverage reports, or recompiling
++	  the optimized kernel.
++
++	  Note that a kernel compiled with profiling flags will be
++	  significantly larger and run slower. Also be sure to exclude files
++	  from profiling which are not linked to the kernel image to prevent
++	  linker errors.
++
++	  Note that the debugfs filesystem has to be mounted to access
++	  profiling data.
++
++config SCC_CLANG
++	bool "Enable Clang's Source-based Code Coverage (SCC)"
++	depends on INSTR_PROFILE_CLANG
++	help
++	  This option enables Clang's Source-based Code Coverage (SCC).
++
++	  If unsure, say N.
++
++	  After downloading /sys/kernel/debug/clang_instr_profile/profraw and
++	  converting it into the indexed vmlinux.profdata. It can then be fed to
++	  llvm-cov to generate coverage reports.
++
++endmenu
+diff --git a/kernel/clang_instr_profile/Makefile b/kernel/clang_instr_profile/Makefile
+new file mode 100644
+index 000000000..9e182d480
+--- /dev/null
++++ b/kernel/clang_instr_profile/Makefile
+@@ -0,0 +1,5 @@
++# SPDX-License-Identifier: GPL-2.0
++GCOV_PROFILE		:= n
++CLANG_INSTR_PROFILE	:= n
++
++obj-y	+= fs.o
+diff --git a/kernel/clang_instr_profile/clang_instr_profile.h b/kernel/clang_instr_profile/clang_instr_profile.h
+new file mode 100644
+index 000000000..8fd9d568b
+--- /dev/null
++++ b/kernel/clang_instr_profile/clang_instr_profile.h
+@@ -0,0 +1,163 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (C) 2019	Sami Tolvanen <samitolvanen@google.com>, Google, Inc.
++ * Copyright (C) 2024	Jinghao Jia   <jinghao7@illinois.edu>,   UIUC
++ * Copyright (C) 2024	Wentao Zhang  <wentaoz5@illinois.edu>,   UIUC
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#ifndef _CLANG_INSTR_PROFILE_H
++#define _CLANG_INSTR_PROFILE_H
++
++extern spinlock_t clang_instr_profile_lock;
++
++static __always_inline unsigned long prf_lock(void)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&clang_instr_profile_lock, flags);
++
++	return flags;
++}
++
++static __always_inline void prf_unlock(unsigned long flags)
++{
++	spin_unlock_irqrestore(&clang_instr_profile_lock, flags);
++}
++
++/*
++ * Note: These internal LLVM definitions must match the compiler version.
++ * See llvm/include/llvm/ProfileData/InstrProfData.inc in LLVM's source code.
++ */
++
++#define LLVM_INSTR_PROF_RAW_MAGIC_64	\
++		((u64)255 << 56 |	\
++		 (u64)'l' << 48 |	\
++		 (u64)'p' << 40 |	\
++		 (u64)'r' << 32 |	\
++		 (u64)'o' << 24 |	\
++		 (u64)'f' << 16 |	\
++		 (u64)'r' << 8  |	\
++		 (u64)129)
++#define LLVM_INSTR_PROF_RAW_MAGIC_32	\
++		((u64)255 << 56 |	\
++		 (u64)'l' << 48 |	\
++		 (u64)'p' << 40 |	\
++		 (u64)'r' << 32 |	\
++		 (u64)'o' << 24 |	\
++		 (u64)'f' << 16 |	\
++		 (u64)'R' << 8  |	\
++		 (u64)129)
++
++#define LLVM_INSTR_PROF_RAW_VERSION		9
++#define LLVM_INSTR_PROF_DATA_ALIGNMENT		8
++#define LLVM_INSTR_PROF_IPVK_FIRST		0
++#define LLVM_INSTR_PROF_IPVK_LAST		1
++
++/**
++ * struct llvm_prf_header - represents the raw profile header data structure.
++ * @magic: the magic token for the file format.
++ * @version: the version of the file format.
++ * @num_data: the number of entries in the profile data section.
++ * @padding_bytes_before_counters: the number of padding bytes before the
++ *   counters.
++ * @num_counters: the size in bytes of the LLVM profile section containing the
++ *   counters.
++ * @padding_bytes_after_counters: the number of padding bytes after the
++ *   counters.
++ * @names_size: the size in bytes of the LLVM profile section containing the
++ *   counters' names.
++ * @counters_delta: the beginning of the LLMV profile counters section.
++ * @names_delta: the beginning of the LLMV profile names section.
++ * @value_kind_last: the last profile value kind.
++ */
++struct llvm_prf_header {
++	u64 magic;
++	u64 version;
++	u64 binary_ids_size;
++	u64 num_data;
++	u64 padding_bytes_before_counters;
++	u64 num_counters;
++	u64 padding_bytes_after_counters;
++	u64 num_bitmap_bytes;
++	u64 padding_bytes_after_bitmap_bytes;
++	u64 names_size;
++	u64 counters_delta;
++	u64 bitmap_delta;
++	u64 names_delta;
++	u64 value_kind_last;
++};
++
++/**
++ * struct llvm_prf_data - represents the per-function control structure.
++ * @name_ref: the reference to the function's name.
++ * @func_hash: the hash value of the function.
++ * @counter_ptr: a pointer to the profile counter.
++ * @function_pointer: a pointer to the function.
++ * @values: the profiling values associated with this function.
++ * @num_counters: the number of counters in the function.
++ * @num_value_sites: the number of value profile sites.
++ */
++struct llvm_prf_data {
++	const u64 name_ref;
++	const u64 func_hash;
++	const void *counter_ptr;
++	const void *bitmap_ptr;
++	const void *function_pointer;
++	void *values;
++	const u32 num_counters;
++	const u16 num_value_sites[LLVM_INSTR_PROF_IPVK_LAST + 1];
++	const u32 num_bitmap_bytes;
++} __aligned(LLVM_INSTR_PROF_DATA_ALIGNMENT);
++
++/* Data sections */
++extern struct llvm_prf_data __llvm_prf_data_start[];
++extern struct llvm_prf_data __llvm_prf_data_end[];
++
++extern u64 __llvm_prf_cnts_start[];
++extern u64 __llvm_prf_cnts_end[];
++
++extern char __llvm_prf_names_start[];
++extern char __llvm_prf_names_end[];
++
++extern char __llvm_prf_bits_start[];
++extern char __llvm_prf_bits_end[];
++
++#define __DEFINE_PRF_SIZE(s) 						\
++	static inline unsigned long prf_ ## s ## _size(void)		\
++	{								\
++		unsigned long start =					\
++			(unsigned long)__llvm_prf_ ## s ## _start;	\
++		unsigned long end =					\
++			(unsigned long)__llvm_prf_ ## s ## _end;	\
++		return roundup(end - start,				\
++				sizeof(__llvm_prf_ ## s ## _start[0]));	\
++	}								\
++	static inline unsigned long prf_ ## s ## _count(void)		\
++	{								\
++		return prf_ ## s ## _size() /				\
++			sizeof(__llvm_prf_ ## s ## _start[0]);		\
++	}
++
++__DEFINE_PRF_SIZE(data);
++__DEFINE_PRF_SIZE(cnts);
++__DEFINE_PRF_SIZE(names);
++__DEFINE_PRF_SIZE(bits);
++
++#undef __DEFINE_PRF_SIZE
++
++static inline unsigned long prf_get_padding(unsigned long size)
++{
++	return 7 & (sizeof(u64) - size % sizeof(u64));
++}
++
++#endif /* _CLANG_INSTR_PROFILE_H */
+diff --git a/kernel/clang_instr_profile/fs.c b/kernel/clang_instr_profile/fs.c
+new file mode 100644
+index 000000000..75b03d6d8
+--- /dev/null
++++ b/kernel/clang_instr_profile/fs.c
+@@ -0,0 +1,258 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2019	Sami Tolvanen <samitolvanen@google.com>, Google, Inc.
++ * Copyright (C) 2024	Jinghao Jia   <jinghao7@illinois.edu>,   UIUC
++ * Copyright (C) 2024	Wentao Zhang  <wentaoz5@illinois.edu>,   UIUC
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#define pr_fmt(fmt)	"clang_instr_profile: " fmt
++
++#include <linux/kernel.h>
++#include <linux/debugfs.h>
++#include <linux/fs.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/vmalloc.h>
++#include <linux/spinlock.h>
++#include "clang_instr_profile.h"
++
++/*
++ * This lock guards both profile count reset and serialization of the
++ * profiling data. Keeping both of these activities separate via locking
++ * ensures that we don't try to serialize data that's being reset.
++ */
++DEFINE_SPINLOCK(clang_instr_profile_lock);
++
++static struct dentry *directory;
++
++struct prf_private_data {
++	char *buffer;
++	unsigned long size;
++};
++
++/*
++ * Raw profile data format:
++ *
++ *	- llvm_prf_header
++ *	- binary ids
++ *	- __llvm_prf_data
++ *	- zero padding to 8 bytes
++ *	- __llvm_prf_cnts
++ *	- zero padding to 8 bytes
++ *	- __llvm_prf_bits
++ *	- zero padding to 8 bytes
++ *	- __llvm_prf_names
++ *	- zero padding to 8 bytes
++ *	- ...
++ */
++
++static void prf_fill_header(void **buffer)
++{
++	struct llvm_prf_header *header = *(struct llvm_prf_header **)buffer;
++
++#ifdef CONFIG_64BIT
++	header->magic = LLVM_INSTR_PROF_RAW_MAGIC_64;
++#else
++	header->magic = LLVM_INSTR_PROF_RAW_MAGIC_32;
++#endif
++	header->version = LLVM_INSTR_PROF_RAW_VERSION;
++	header->binary_ids_size = 0;
++	header->num_data = prf_data_count();
++	header->padding_bytes_before_counters = 0;
++	header->num_counters = prf_cnts_count();
++	header->padding_bytes_after_counters = 0;
++	header->num_bitmap_bytes = prf_bits_count();
++	header->padding_bytes_after_bitmap_bytes =
++		prf_get_padding(prf_bits_size());
++	header->names_size = prf_names_count();
++	header->counters_delta = (u64)__llvm_prf_cnts_start -
++				 (u64)__llvm_prf_data_start;
++	header->bitmap_delta   = (u64)__llvm_prf_bits_start -
++				 (u64)__llvm_prf_data_start;
++	header->names_delta    = (u64)__llvm_prf_names_start;
++	header->value_kind_last = LLVM_INSTR_PROF_IPVK_LAST;
++
++	*buffer += sizeof(*header);
++}
++
++/*
++ * Copy the source into the buffer, incrementing the pointer into buffer in the
++ * process.
++ */
++static void prf_copy_to_buffer(void **buffer, void *src, unsigned long size)
++{
++	memcpy(*buffer, src, size);
++	*buffer += size;
++}
++
++static unsigned long prf_buffer_size(void)
++{
++	return sizeof(struct llvm_prf_header) +
++			prf_data_size()	+
++			prf_cnts_size() +
++			prf_bits_size() +
++			prf_get_padding(prf_bits_size()) +
++			prf_names_size() +
++			prf_get_padding(prf_names_size());
++}
++
++/*
++ * Serialize the profiling data into a format LLVM's tools can understand.
++ */
++static int prf_serialize(struct prf_private_data *p)
++{
++	int err = 0;
++	void *buffer;
++
++	p->size = prf_buffer_size();
++	p->buffer = vzalloc(p->size);
++
++	if (!p->buffer) {
++		err = -ENOMEM;
++		goto out;
++	}
++
++	buffer = p->buffer;
++
++	prf_fill_header(&buffer);
++	prf_copy_to_buffer(&buffer, __llvm_prf_data_start,  prf_data_size());
++	prf_copy_to_buffer(&buffer, __llvm_prf_cnts_start,  prf_cnts_size());
++	prf_copy_to_buffer(&buffer, __llvm_prf_bits_start,  prf_bits_size());
++	buffer += prf_get_padding(prf_bits_size());
++	prf_copy_to_buffer(&buffer, __llvm_prf_names_start, prf_names_size());
++	buffer += prf_get_padding(prf_names_size());
++
++out:
++	return err;
++}
++
++/*
++ * open() implementation for clang_instr_profile. Creates a copy of the
++ * profiling data set.
++ */
++static int prf_open(struct inode *inode, struct file *file)
++{
++	struct prf_private_data *data;
++	unsigned long flags;
++	int err;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data) {
++		err = -ENOMEM;
++		goto out;
++	}
++
++	flags = prf_lock();
++
++	err = prf_serialize(data);
++	if (unlikely(err)) {
++		kfree(data);
++		goto out_unlock;
++	}
++
++	file->private_data = data;
++
++out_unlock:
++	prf_unlock(flags);
++out:
++	return err;
++}
++
++/* read() implementation for clang_instr_profile. */
++static ssize_t prf_read(struct file *file, char __user *buf, size_t count,
++			loff_t *ppos)
++{
++	struct prf_private_data *data = file->private_data;
++
++	if(!data)
++		return -EBADF;
++
++	return simple_read_from_buffer(buf, count, ppos, data->buffer,
++				       data->size);
++}
++
++/*
++ * release() implementation for clang_instr_profile. Release resources allocated
++ * by open().
++ */
++static int prf_release(struct inode *inode, struct file *file)
++{
++	struct prf_private_data *data = file->private_data;
++
++	if (data) {
++		vfree(data->buffer);
++		kfree(data);
++	}
++
++	return 0;
++}
++
++static const struct file_operations prf_fops = {
++	.owner		= THIS_MODULE,
++	.open		= prf_open,
++	.read		= prf_read,
++	.llseek		= default_llseek,
++	.release	= prf_release
++};
++
++/* write() implementation for resetting clang_instr_profile's profile data. */
++static ssize_t reset_write(struct file *file, const char __user *addr,
++			   size_t len, loff_t *pos)
++{
++	unsigned long flags;
++
++	flags = prf_lock();
++	memset(__llvm_prf_cnts_start, 0, prf_cnts_size());
++	memset(__llvm_prf_bits_start, 0, prf_bits_size());
++	prf_unlock(flags);
++
++	return len;
++}
++
++static const struct file_operations prf_reset_fops = {
++	.owner		= THIS_MODULE,
++	.write		= reset_write,
++	.llseek		= noop_llseek,
++};
++
++/* Create debugfs entries. */
++static int __init clang_instr_profile_init(void)
++{
++	directory = debugfs_create_dir("clang_instr_profile", NULL);
++	if (!directory)
++		goto err_remove;
++
++	if (!debugfs_create_file("profraw", 0600, directory, NULL,
++				 &prf_fops))
++		goto err_remove;
++
++	if (!debugfs_create_file("reset", 0200, directory, NULL,
++				 &prf_reset_fops))
++		goto err_remove;
++
++	return 0;
++
++err_remove:
++	debugfs_remove_recursive(directory);
++	pr_err("initialization failed\n");
++	return -EIO;
++}
++
++/* Remove debugfs entries. */
++static void __exit clang_instr_profile_exit(void)
++{
++	debugfs_remove_recursive(directory);
++}
++
++module_init(clang_instr_profile_init);
++module_exit(clang_instr_profile_exit);
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 0a8a4689c..69bac29c1 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -150,6 +150,16 @@ _c_flags += $(if $(patsubst n%,, \
+ 		$(CFLAGS_GCOV))
+ endif
+ 
++#
++# Enable Clang's Source-based Code Coverage flags for a file or directory
++# depending on variables CLANG_INSTR_PROFILE_obj.o and CLANG_INSTR_PROFILE.
++#
++ifeq ($(CONFIG_SCC_CLANG),y)
++_c_flags += $(if $(patsubst n%,, \
++		$(CLANG_INSTR_PROFILE_$(basetarget).o)$(CLANG_INSTR_PROFILE)y), \
++		$(CFLAGS_SCC_CLANG))
++endif
++
+ #
+ # Enable address sanitizer flags for kernel except some files or directories
+ # we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index c6e655e0e..2e736de0c 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -887,6 +887,8 @@ static const char *const section_white_list[] =
+ 	".fmt_slot*",			/* EZchip */
+ 	".gnu.lto*",
+ 	".discard.*",
++	"__llvm_covfun",
++	"__llvm_covmap",
+ 	NULL
+ };
+ 
+-- 
+2.34.1
+
