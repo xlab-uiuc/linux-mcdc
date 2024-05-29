@@ -12,6 +12,7 @@ Tentative repository structure:
 linux-mcdc
 │
 ├── docs
+│   ├── elisa-slides.pdf
 │   └── measure-kernel-mcdc.md
 │
 ├── scripts
@@ -30,9 +31,9 @@ linux-mcdc
 ```
 
 We gave an ELISA seminar titled "Making Linux Fly: Towards Certified Linux
-Kernel". More information can be found here:
-https://elisa.tech/event/elisa-seminar-making-linux-fly-towards-certified-linux-kernel/.
-Slides and recording will be uploaded by ELISA organizers as well.
+Kernel".
+[[recording](https://elisa.tech/blog/2024/05/28/making-linux-fly-towards-certified-linux-kernel/)]
+[[slides](./docs/elisa-slides.pdf)]
 
 Please feel free to open Issues/PRs if you have any suggestions or questions.
 You can also send emails to:
