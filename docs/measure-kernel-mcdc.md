@@ -7,7 +7,7 @@
     - Distro: Ubuntu 22.04
     - Kernel: 5.15.0-86-generic
 
-    Other settings can possibly work, but they are not fully tested.
+    Other settings (e.g. Arm) can possibly work, but they are not fully tested.
 
 - If we don't plan to build LLVM from source, please reserve ~30G of disk
   space; otherwise reserve ~150G.
@@ -74,6 +74,9 @@ export PATH="$MCDC_HOME/llvm-project/build/bin:$PATH"
 
 ### Install nightly packages
 
+The essential steps are described below. For more information about these
+nightly packages, visit https://apt.llvm.org/.
+
 Get the installation script:
 
 ```shell
@@ -93,8 +96,6 @@ After installation, set $PATH up:
 ```shell
 export PATH="/usr/lib/llvm-18/bin:$PATH"
 ```
-
-Visit https://apt.llvm.org/ for more information.
 
 ## 4. Build the kernel
 
