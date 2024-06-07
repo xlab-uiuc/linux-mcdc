@@ -23,7 +23,7 @@ sudo apt-get install git bc libncurses-dev wget busybox \
     libssl-dev libelf-dev dwarves flex bison build-essential
 
 # For booting the kernel
-sudo apt-get install qemu qemu-system-x86
+sudo apt-get install qemu-system-x86
 ```
 
 Set up KVM
