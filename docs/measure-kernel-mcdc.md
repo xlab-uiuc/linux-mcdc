@@ -41,7 +41,7 @@ export MCDC_HOME=$(realpath .)
 # This meta repository
 git clone https://github.com/xlab-uiuc/linux-mcdc.git
 # LLVM if we want to build it from source (optional)
-git clone https://github.com/llvm/llvm-project.git --branch llvmorg-18.1.6 --depth 5
+git clone https://github.com/llvm/llvm-project.git --branch llvmorg-18.1.7 --depth 5
 # Linux kernel
 git clone https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git --branch v5.15.153 --depth 5
 
