@@ -2,7 +2,7 @@
 
 mkdir -p build
 cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
+cmake -GNinja -DCMAKE_BUILD_TYPE="Release" \
               -DCMAKE_C_FLAGS="-pipe" \
               -DCMAKE_CXX_FLAGS="-pipe" \
               -DCMAKE_C_COMPILER="gcc" \
