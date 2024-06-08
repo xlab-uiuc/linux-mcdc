@@ -9,6 +9,7 @@
 
     Other settings (e.g. Arm) can possibly work, but they are not fully tested.
 
+- Larger than 24G of main memory is recommended.
 - If we don't plan to build LLVM from source, please reserve ~30G of disk
   space; otherwise reserve ~150G.
 
@@ -268,6 +269,7 @@ llvm-cov show --show-mcdc                                                      \
               --show-region-summary=false                                      \
               --show-branch-summary=false                                      \
               --format=html                                                    \
+              -show-directory-coverage                                         \
               -output-dir=html-coverage-reports                                \
               -instr-profile profdata                                          \
               $MCDC_HOME/linux/vmlinux
