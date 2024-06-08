@@ -11,7 +11,7 @@
 
 # Todo:
 #
-# 1. Optionally do not require /dev/kvm permissions
+# <del>1. Optionally do not require /dev/kvm permissions</del>
 # 2. Verify if this script works under host /mnt/ directory
 
 IS_GUEST=${IS_GUEST:-false}
@@ -108,7 +108,7 @@ host() {
 
     local accel
     if [[ "$(uname -m)" = "${VM_ARCH}" ]]; then
-        if [[ -e /dev/kvm ]]; then
+        if [[ -e /dev/kvm && -r /dev/kvm && -w /dev/kvm ]]; then
             accel+=" -machine accel=kvm:tcg"
             accel+=" -enable-kvm"
         fi
@@ -121,7 +121,7 @@ host() {
     case "${VM_ARCH}" in
     x86_64)
         if [[ "$(uname -m)" = "${VM_ARCH}" ]]; then
-            if [[ -e /dev/kvm ]]; then
+            if [[ -e /dev/kvm && -r /dev/kvm && -w /dev/kvm ]]; then
                 cpu="host"
             else
                 cpu="max"
