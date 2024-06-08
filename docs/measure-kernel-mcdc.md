@@ -26,11 +26,25 @@ sudo apt-get install git bc libncurses-dev wget busybox \
 sudo apt-get install qemu-system-x86
 ```
 
-Set up KVM
+<!--
 
-```shell
-sudo chmod 666 /dev/kvm
-```
+(Optional) Set up KVM for better performance
+
+1. If `/dev/kvm` exists on host...
+
+    ```shell
+    sudo usermod -aG kvm $USER
+    newgrp kvm
+    ```
+
+    Even if we don't set this up, it should still work fine as now our QEMU
+    wrapper script will automatically downgrade to TCG mode.
+
+2. If `/dev/kvm` doesn't exist on host...
+
+    No action is required. QEMU will run in TCG mode.
+
+-->
 
 ## 2. Pull the source code and apply patches
 
