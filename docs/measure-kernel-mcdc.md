@@ -10,8 +10,11 @@
     Other settings (e.g. Arm) can possibly work, but they are not fully tested.
 
 - Larger than 24G of main memory is recommended.
-- If we don't plan to build LLVM from source, please reserve ~30G of disk
-  space; otherwise reserve ~150G.
+- If we don't plan to build LLVM from source, please reserve ~15G of disk
+  space; otherwise reserve ~20G.
+  <!-- As observed in a recent run, the built LLVM is ~6.2G (with
+       -DCMAKE_BUILD_TYPE="Release"); the built Linux is ~9.8G; LLVM downloaded
+       from apt.llvm.org is 912M; other dpkg packages are less than 500M.    -->
 
 ## 1. Install dependencies
 
@@ -200,9 +203,12 @@ cd $MCDC_HOME/linux
 $MCDC_HOME/linux-mcdc/scripts/q
 ```
 
-During the booting process, KUnit tests are also executed since we enabled
-relevant options earlier. The results are printed to the kernel log in
-[TAP format](https://testanything.org/), like below:
+(In case we have trouble booting: check whether [this post](https://github.com/xlab-uiuc/linux-mcdc/issues/4)
+can solve the problem. If not, please [open an Issue](https://github.com/xlab-uiuc/linux-mcdc/issues/new).)
+
+If all goes well, during the booting process, KUnit tests will also be executed
+since we've enabled relevant options earlier. The results are printed to the
+kernel log in [TAP format](https://testanything.org/), like below:
 
 ```text
 [    4.524452]     # Subtest: qos-kunit-test
