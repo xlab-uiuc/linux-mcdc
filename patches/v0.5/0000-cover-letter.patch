@@ -1,0 +1,112 @@
+From 7036ed1a1b400515643ef73bf65d9d2d2f5035da Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <wentaoz5@illinois.edu>
+Date: Mon, 10 Jun 2024 13:57:00 -0400
+Subject: [RFC PATCH 0/3] Enable measuring the kernel's MC/DC with Clang
+
+This patch series adds support for building x86-64 kernels with Clang's Source-
+based Code Coverage and measuring modified condition/decision coverage (MC/DC).
+
+MC/DC is a fine-grained coverage metric required by many automotive and aviation
+industrial standards for certifying mission-critical software [1]. Clang has
+added MC/DC support since its release 18.1.0 [2].
+
+To do a full kernel measurement, instrument the kernel with CONFIG_MCDC_CLANG
+enabled, run the testsuites, and collect the raw profile data under
+/sys/kernel/debug/clang_instr_profile/profraw. Such raw profile data can be
+merged and indexed, and used for generating coverage reports in various formats.
+
+  $ cp /sys/kernel/debug/clang_instr_profile/profraw vmlinux.profraw
+  $ llvm-profdata merge vmlinux.profraw -o vmlinux.profdata
+  $ llvm-cov show --show-mcdc --show-mcdc-summary                              \
+                  --format=text --use-color=false -output-dir=coverage_reports \
+                  -instr-profile vmlinux.profdata vmlinux
+
+The produced reports would look like (excerpt from arch/x86/events/probe.c.txt):
+
+ Line|  Count|                  Source
+-----+-------+-----------------------------------------------------------------
+   43|     12|			if (msr[bit].test && !msr[bit].test(bit, data))
+  ------------------
+  |---> MC/DC Decision Region (43:8) to (43:50)
+  |
+  |  Number of Conditions: 2
+  |     Condition C1 --> (43:8)
+  |     Condition C2 --> (43:25)
+  |
+  |  Executed MC/DC Test Vectors:
+  |
+  |     C1, C2    Result
+  |  1 { T,  F  = F      }
+  |  2 { T,  T  = T      }
+  |
+  |  C1-Pair: not covered
+  |  C2-Pair: covered: (1,2)
+  |  MC/DC Coverage for Decision: 50.00%
+  |
+  ------------------
+   44|      5|				continue;
+
+As the results suggest, during this span of measurement, only condition C2
+(!msr[bit].test(bit, data)) is covered. That means C2 is evaluated to both true
+and false and in those test vectors C2 affects the decision outcome
+independently. Therefore MC/DC for the shown decision is 1 out of 2 (50.00%).
+Current Clang implementation can track 2 to 6 leaf-level conditions in a
+decision.
+
+The first patch in the series enables Clang's Source-based Code Coverage
+instrumentation to the kernel. The second patch disables instrumenting the same
+set of files that were skipped by gcov as well. The third patch enables MC/DC
+instrumentation which is based on Source-based Code Coverage.
+
+This work reuses a portion of code from a previous effort [3], but we aim for
+*code coverage* required for high assurance (MC/DC) while [3] focused more on
+performance optimization.
+
+This initial submission is restricted to x86-64. Support for other architectures
+would need a bit more Makefile & linker script modification. Informally we've
+confirmed that arm64 works and more are being tested.
+
+Note that Source-based Code Coverage is Clang-specific and isn't compatible with
+Clang's gcov support in kernel/gcov. Currently, kernel/gcov is not able to
+measure MC/DC.
+
+[1] https://en.wikipedia.org/wiki/Modified_condition/decision_coverage
+[2] https://releases.llvm.org/18.1.0/tools/clang/docs/SourceBasedCodeCoverage.html
+[3] https://lore.kernel.org/linux-doc/20210407211704.367039-1-morbo@google.com/
+
+Wentao Zhang (3):
+  clang_instr_profile: add Clang's Source-based Code Coverage support
+  kbuild, clang_instr_profile: disable instrumentation in odd or
+    sensitive code
+  clang_instr_profile: add Clang's MC/DC support
+
+ Makefile                                      |   6 +
+ arch/Kconfig                                  |   1 +
+ arch/x86/Kconfig                              |   1 +
+ arch/x86/boot/Makefile                        |   1 +
+ arch/x86/boot/compressed/Makefile             |   1 +
+ arch/x86/entry/vdso/Makefile                  |   1 +
+ arch/x86/kernel/vmlinux.lds.S                 |   2 +
+ arch/x86/platform/efi/Makefile                |   1 +
+ arch/x86/purgatory/Makefile                   |   1 +
+ arch/x86/realmode/rm/Makefile                 |   1 +
+ arch/x86/um/vdso/Makefile                     |   1 +
+ drivers/firmware/efi/libstub/Makefile         |   1 +
+ include/asm-generic/vmlinux.lds.h             |  38 +++
+ kernel/Makefile                               |   1 +
+ kernel/clang_instr_profile/Kconfig            |  63 +++++
+ kernel/clang_instr_profile/Makefile           |   5 +
+ .../clang_instr_profile/clang_instr_profile.h | 160 +++++++++++
+ kernel/clang_instr_profile/fs.c               | 257 ++++++++++++++++++
+ kernel/trace/Makefile                         |   1 +
+ scripts/Makefile.lib                          |  22 ++
+ scripts/mod/modpost.c                         |   2 +
+ 21 files changed, 567 insertions(+)
+ create mode 100644 kernel/clang_instr_profile/Kconfig
+ create mode 100644 kernel/clang_instr_profile/Makefile
+ create mode 100644 kernel/clang_instr_profile/clang_instr_profile.h
+ create mode 100644 kernel/clang_instr_profile/fs.c
+
+--
+2.34.1
+

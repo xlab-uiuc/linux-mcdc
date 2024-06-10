@@ -1,0 +1,74 @@
+From 7036ed1a1b400515643ef73bf65d9d2d2f5035da Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <wentaoz5@illinois.edu>
+Date: Wed, 3 Apr 2024 23:05:28 -0500
+Subject: [RFC PATCH 3/3] clang_instr_profile: add Clang's MC/DC support
+
+Add the Clang flag and kconfig option for measuring the kernel's modified
+condition/decision coverage (MC/DC).
+
+Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+---
+ Makefile                           |  3 +++
+ kernel/clang_instr_profile/Kconfig | 10 ++++++++++
+ scripts/Makefile.lib               | 12 ++++++++++++
+ 3 files changed, 25 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index a96654c7d..1c4e329fa 100644
+--- a/Makefile
++++ b/Makefile
+@@ -688,6 +688,9 @@ all: vmlinux
+ CFLAGS_SCC_CLANG := -fprofile-instr-generate -fcoverage-mapping
+ export CFLAGS_SCC_CLANG
+ 
++CFLAGS_MCDC_CLANG := -fcoverage-mcdc
++export CFLAGS_MCDC_CLANG
++
+ CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage
+ ifdef CONFIG_CC_IS_GCC
+ CFLAGS_GCOV	+= -fno-tree-loop-im
+diff --git a/kernel/clang_instr_profile/Kconfig b/kernel/clang_instr_profile/Kconfig
+index aa4763121..3c6e61531 100644
+--- a/kernel/clang_instr_profile/Kconfig
++++ b/kernel/clang_instr_profile/Kconfig
+@@ -50,4 +50,14 @@ config SCC_CLANG
+ 	  converting it into the indexed vmlinux.profdata. It can then be fed to
+ 	  llvm-cov to generate coverage reports.
+ 
++config MCDC_CLANG
++	bool "Enable measuring modified condition/decision coverage (MC/DC)"
++	depends on SCC_CLANG
++	depends on CLANG_VERSION >= 180000
++	help
++	  This option enables measuring modified condition/decision coverage
++	  (MC/DC) with Clang's Source-based Code Coverage.
++
++	  If unsure, say N.
++
+ endmenu
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 69bac29c1..d17efcd00 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -160,6 +160,18 @@ _c_flags += $(if $(patsubst n%,, \
+ 		$(CFLAGS_SCC_CLANG))
+ endif
+ 
++#
++# Flag that turns on modified condition/decision coverage (MC/DC) measurement
++# with Clang's Source-based Code Coverage. Enable the flag for a file or
++# directory depending on variables CLANG_INSTR_PROFILE_obj.o and
++# CLANG_INSTR_PROFILE.
++#
++ifeq ($(CONFIG_MCDC_CLANG),y)
++_c_flags += $(if $(patsubst n%,, \
++		$(CLANG_INSTR_PROFILE_$(basetarget).o)$(CLANG_INSTR_PROFILE)y), \
++		$(CFLAGS_MCDC_CLANG))
++endif
++
+ #
+ # Enable address sanitizer flags for kernel except some files or directories
+ # we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
+-- 
+2.34.1
+
