@@ -9,7 +9,8 @@
 
     Other settings (e.g. Arm) can possibly work, but they are not fully tested.
 
-- Larger than 24G of main memory is recommended.
+- Larger than 24G of main memory is recommended for successfully linking the
+  kernel image.
 - If we don't plan to build LLVM from source, please reserve ~15G of disk
   space; otherwise reserve ~20G.
   <!-- As observed in a recent run, the built LLVM is ~6.2G (with
@@ -258,6 +259,12 @@ and should have had a copy of `profraw` there.
 ```shell
 # (host)
 file profraw
+```
+
+The result should be:
+
+```text
+profraw: LLVM raw profile data, version 9
 ```
 
 Now we can analyze the profile and generate coverage reports in a similar way to
