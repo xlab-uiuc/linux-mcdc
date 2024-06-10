@@ -1,3 +1,5 @@
+![screenshot.png](screenshot.png)
+
 This project is a collaboration between The Boeing Company and University of
 Illinois Urbana-Champaign.
 
@@ -28,6 +30,7 @@ linux-mcdc
 │       ├── 0002-kbuild-clang_instr_profile-disable-instrumentation-i.patch
 │       └── 0003-clang_instr_profile-add-Clang-s-MC-DC-support.patch
 │
+├── screenshot.png
 └── README.md
 ```
 
