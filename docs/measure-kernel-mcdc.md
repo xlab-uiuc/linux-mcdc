@@ -204,7 +204,8 @@ cd $MCDC_HOME/linux
 $MCDC_HOME/linux-mcdc/scripts/q
 ```
 
-(In case we have trouble booting: check whether [this post](https://github.com/xlab-uiuc/linux-mcdc/issues/4)
+(In case we have trouble booting: exit QEMU by first pressing Ctrl+A and then
+pressing X, check whether [this post](https://github.com/xlab-uiuc/linux-mcdc/issues/4)
 can solve the problem. If not, please [open an Issue](https://github.com/xlab-uiuc/linux-mcdc/issues/new).)
 
 If all goes well, during the booting process, KUnit tests will also be executed
