@@ -137,7 +137,7 @@ groups of options:
     ./scripts/config -e CONFIG_NET_9P
     ./scripts/config -e CONFIG_PCI
     ./scripts/config -e CONFIG_VIRTIO_PCI
-    ./scripts/config -e OVERLAY_FS
+    ./scripts/config -e CONFIG_OVERLAY_FS
     ./scripts/config -e CONFIG_DEBUG_FS
     ./scripts/config -e CONFIG_CONFIGFS_FS
     ./scripts/config -e CONFIG_MAGIC_SYSRQ
