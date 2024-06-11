@@ -3,8 +3,8 @@
 This project is a collaboration between The Boeing Company and University of
 Illinois Urbana-Champaign.
 
-[Get started (LLVM 18)](https://github.com/xlab-uiuc/linux-mcdc/blob/public-approved/docs/measure-kernel-mcdc.md)
-            [(LLVM 19)](https://github.com/xlab-uiuc/linux-mcdc/blob/llvm19/docs/measure-kernel-mcdc.md)
+[[Get started (LLVM 19)](https://github.com/xlab-uiuc/linux-mcdc/blob/llvm19/docs/measure-kernel-mcdc.md)]
+            [[(LLVM 18)](https://github.com/xlab-uiuc/linux-mcdc/blob/public-approved/docs/measure-kernel-mcdc.md)]
 
 More materials will be posted here as soon as they are approved. Please stay
 tuned!
