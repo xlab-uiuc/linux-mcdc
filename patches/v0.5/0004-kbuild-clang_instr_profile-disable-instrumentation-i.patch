@@ -1,0 +1,84 @@
+From ba7f843a2a7b0e841664cdd0a38c6ba354e59ed2 Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <wentaoz5@illinois.edu>
+Date: Tue, 11 Jun 2024 15:07:57 -0500
+Subject: [RFC PATCH 4/4] kbuild, clang_instr_profile: disable instrumentation
+ in odd or sensitive code
+
+Skip some extra files that are problematic with LLVM 19 MC/DC instrumentation
+
+Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+---
+ arch/x86/kernel/cpu/mtrr/Makefile         | 3 +++
+ drivers/base/power/Makefile               | 3 +++
+ drivers/gpu/drm/i915/Makefile             | 3 +++
+ drivers/net/ethernet/intel/e1000/Makefile | 2 ++
+ net/ipv4/Makefile                         | 2 ++
+ 5 files changed, 13 insertions(+)
+
+diff --git a/arch/x86/kernel/cpu/mtrr/Makefile b/arch/x86/kernel/cpu/mtrr/Makefile
+index cc4f9f1cb94c..72420689b303 100644
+--- a/arch/x86/kernel/cpu/mtrr/Makefile
++++ b/arch/x86/kernel/cpu/mtrr/Makefile
+@@ -1,4 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-only
++
++CLANG_INSTR_PROFILE_generic.o := n
++
+ obj-y		:= mtrr.o if.o generic.o cleanup.o
+ obj-$(CONFIG_X86_32) += amd.o cyrix.o centaur.o
+ 
+diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
+index 8fdd0073eeeb..1cc1b432b3de 100644
+--- a/drivers/base/power/Makefile
++++ b/drivers/base/power/Makefile
+@@ -1,4 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
++
++CLANG_INSTR_PROFILE_main.o := n
++
+ obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o runtime.o wakeirq.o
+ obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o wakeup_stats.o
+ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
+index 9d371be7dc5c..ed1e1a4bfce6 100644
+--- a/drivers/gpu/drm/i915/Makefile
++++ b/drivers/gpu/drm/i915/Makefile
+@@ -12,6 +12,9 @@
+ # Note the danger in using -Wall -Wextra is that when CI updates gcc we
+ # will most likely get a sudden build breakage... Hopefully we will fix
+ # new warnings before CI updates!
++
++CLANG_INSTR_PROFILE_intel_bios.o := n
++
+ subdir-ccflags-y := -Wall -Wextra
+ subdir-ccflags-y += $(call cc-disable-warning, unused-parameter)
+ subdir-ccflags-y += $(call cc-disable-warning, type-limits)
+diff --git a/drivers/net/ethernet/intel/e1000/Makefile b/drivers/net/ethernet/intel/e1000/Makefile
+index 314c52d44b7c..539c7c469d73 100644
+--- a/drivers/net/ethernet/intel/e1000/Makefile
++++ b/drivers/net/ethernet/intel/e1000/Makefile
+@@ -5,6 +5,8 @@
+ # Makefile for the Intel(R) PRO/1000 ethernet driver
+ #
+ 
++CLANG_INSTR_PROFILE_e1000_main.o := n
++
+ obj-$(CONFIG_E1000) += e1000.o
+ 
+ e1000-objs := e1000_main.o e1000_hw.o e1000_ethtool.o e1000_param.o
+diff --git a/net/ipv4/Makefile b/net/ipv4/Makefile
+index bbdd9c44f14e..80cc562210b0 100644
+--- a/net/ipv4/Makefile
++++ b/net/ipv4/Makefile
+@@ -3,6 +3,8 @@
+ # Makefile for the Linux TCP/IP (INET) layer.
+ #
+ 
++CLANG_INSTR_PROFILE_ipconfig.o := n
++
+ obj-y     := route.o inetpeer.o protocol.o \
+ 	     ip_input.o ip_fragment.o ip_forward.o ip_options.o \
+ 	     ip_output.o ip_sockglue.o inet_hashtables.o \
+-- 
+2.34.1
+
