@@ -1,5 +1,10 @@
 # Measure Linux Kernel's MC/DC
 
+> [!NOTE]
+>
+> The following instructions use **LLVM 19** and patch >= v0.5. The differences
+> between LLVM 18 and 19 can be found [here](https://github.com/xlab-uiuc/linux-mcdc/compare/public-approved...llvm19).
+
 ## 0. Prerequisites
 
 - The following instructions are tested with:
@@ -60,15 +65,15 @@ export MCDC_HOME=$(realpath .)
 # This meta repository
 git clone https://github.com/xlab-uiuc/linux-mcdc.git
 # LLVM if we want to build it from source (optional)
-git clone https://github.com/llvm/llvm-project.git --branch llvmorg-18.1.8 --depth 5
+git clone https://github.com/llvm/llvm-project.git --branch main --depth 5
 # Linux kernel
 git clone https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git --branch v5.15.153 --depth 5
 
 # Apply kernel patches
 cd $MCDC_HOME/linux
-git apply $MCDC_HOME/linux-mcdc/patches/v0.4/0001-clang_instr_profile-add-Clang-s-Source-based-Code-Co.patch
-git apply $MCDC_HOME/linux-mcdc/patches/v0.4/0002-kbuild-clang_instr_profile-disable-instrumentation-i.patch
-git apply $MCDC_HOME/linux-mcdc/patches/v0.4/0003-clang_instr_profile-add-Clang-s-MC-DC-support.patch
+git apply $MCDC_HOME/linux-mcdc/patches/v0.5/0001-clang_instr_profile-add-Clang-s-Source-based-Code-Co.patch
+git apply $MCDC_HOME/linux-mcdc/patches/v0.5/0002-kbuild-clang_instr_profile-disable-instrumentation-i.patch
+git apply $MCDC_HOME/linux-mcdc/patches/v0.5/0003-clang_instr_profile-add-Clang-s-MC-DC-support.patch
 ```
 
 ## 3. Get LLVM
@@ -104,16 +109,16 @@ wget https://apt.llvm.org/llvm.sh
 chmod +x llvm.sh
 ```
 
-Install LLVM 18:
+Install LLVM 19:
 
 ```shell
-sudo ./llvm.sh 18
+sudo ./llvm.sh 19
 ```
 
 After installation, set $PATH up:
 
 ```shell
-export PATH="/usr/lib/llvm-18/bin:$PATH"
+export PATH="/usr/lib/llvm-19/bin:$PATH"
 ```
 
 ## 4. Build the kernel
@@ -300,7 +305,9 @@ which should contain two pseudo files: `profraw` and `reset`.
 
 - Writing to `reset` will clear the in-memory counters and bitmaps
 - Reading `profraw` will serialize the in-memory counters and bitmaps in a
-  [proper format](https://releases.llvm.org/18.1.0/docs/InstrProfileFormat.html)
+  [proper format](https://llvm.org/docs/InstrProfileFormat.html)
+  <!-- The essential difference between LLVM 18 and 19 is this format. Since we
+       don't have 19 releases yet. Point to the latest documentation.        -->
   that is recognized by LLVM tools.
 
 Let's copy the profile to current directory, which is [shared with host
@@ -324,7 +331,7 @@ file profraw
 The result should be:
 
 ```text
-profraw: LLVM raw profile data, version 9
+profraw: LLVM raw profile data, version 10
 ```
 
 Now we can analyze the profile and generate coverage reports in a similar way to
