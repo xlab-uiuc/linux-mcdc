@@ -171,14 +171,6 @@ groups of options:
     -> "Clang's instrumentation-based kernel profiling (EXPERIMENTAL)" where we
     can find more detailed explanation for each.
 
-4. Exclude one option from the default config, due to a toolchain bug we are
-   investigating (similar to https://github.com/llvm/llvm-project/issues/92216):
-
-    ```shell
-    ./scripts/config -d CONFIG_DRM_I915
-    make LLVM=1 olddefconfig
-    ```
-
 <!--
 
 Sanity check:
@@ -200,10 +192,6 @@ $ ./scripts/config -s CONFIG_9P_FS_POSIX_ACL     &&\
   ./scripts/config -s CONFIG_MCDC_CLANG
 
 All should print "y".
-
-$ ./scripts/config -s CONFIG_DRM_I915
-
-It should print "n".
 
 -->
 
