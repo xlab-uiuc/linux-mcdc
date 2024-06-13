@@ -18,7 +18,7 @@ IS_GUEST=${IS_GUEST:-false}
 
 if $IS_GUEST; then
     # To-do: Configure by directly modifying the below lines
-    GUEST_HOSTNAME=${GUEST_HOSTNAME:-q}
+    GUEST_HOSTNAME=${GUEST_HOSTNAME:-guest}
 else
     # To-do: Configure by directly modifying the below lines
     VM_NUM_CPU=${VM_NUM_CPU:-2}
