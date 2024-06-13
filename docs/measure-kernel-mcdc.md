@@ -175,11 +175,56 @@ groups of options:
     make LLVM=1 olddefconfig
     ```
 
+<!--
+
+Sanity check:
+
+$ ./scripts/config -s CONFIG_9P_FS_POSIX_ACL     &&\
+  ./scripts/config -s CONFIG_9P_FS               &&\
+  ./scripts/config -s CONFIG_NET_9P_VIRTIO       &&\
+  ./scripts/config -s CONFIG_NET_9P              &&\
+  ./scripts/config -s CONFIG_PCI                 &&\
+  ./scripts/config -s CONFIG_VIRTIO_PCI          &&\
+  ./scripts/config -s CONFIG_OVERLAY_FS          &&\
+  ./scripts/config -s CONFIG_DEBUG_FS            &&\
+  ./scripts/config -s CONFIG_CONFIGFS_FS         &&\
+  ./scripts/config -s CONFIG_MAGIC_SYSRQ         &&\
+  ./scripts/config -s CONFIG_KUNIT               &&\
+  ./scripts/config -s CONFIG_KUNIT_ALL_TESTS     &&\
+  ./scripts/config -s CONFIG_INSTR_PROFILE_CLANG &&\
+  ./scripts/config -s CONFIG_SCC_CLANG           &&\
+  ./scripts/config -s CONFIG_MCDC_CLANG
+
+All should print "y".
+
+$ ./scripts/config -s CONFIG_DRM_I915
+
+It should print "n".
+
+-->
+
 With all the configuration done, let's build the kernel.
 
 ```shell
 make LLVM=1 -j$(nproc)
 ```
+
+<!--
+
+Sanity check:
+
+$ make LLVM=1 -j1
+
+This will *serially* rebuild the kernel, to make sure no error was hidden in the
+lengthy and interleaving log during our first build.
+
+$ llvm-readelf --sections vmlinux |\
+  grep -e '__llvm_prf_bits'        \
+       -e '__llvm_prf_cnts'
+
+to verify the sections for counters and bitmaps are indeed included.
+
+-->
 
 > [!NOTE]
 >
@@ -229,6 +274,21 @@ Now we should have entered an interactive shell of the guest machine.
 # (guest)
 uname -a
 ```
+
+The hostname part should be "guest", as specified [here](../scripts/q#L21). The
+kernel version should be 5.15.153.
+
+<!--
+
+Sanity check:
+
+Besides being printed to kernel log during the booting process, KUnit results
+are also accessible in debugfs. E.g. inside the guest,
+
+$ ls /sys/kernel/debug/kunit/
+$ cat /sys/kernel/debug/kunit/qos-kunit-test/results
+
+-->
 
 Let's inspect the directory added to debugfs by our patch:
 
@@ -290,3 +350,23 @@ llvm-cov show --show-mcdc                                                      \
 ```
 
 The results will be put under `$MCDC_HOME/analysis/html-coverage-reports`.
+
+<!--
+
+Sanity check:
+
+Compare the overall coverage with the screenshot in this repo, i.e. line
+coverage being ~10%, MC/DC being ~2%.
+
+Pick up some decisions and inspect their detailed MC/DC reports, e.g.
+arch/x86/events/probe.c.html#L43.
+
+-->
+
+## Troubleshooting
+
+For any trouble, feel free to [open an Issue](https://github.com/xlab-uiuc/linux-mcdc/issues/new).
+
+To assure ourselves nothing goes fundamentally wrong in the middle, we can also
+go to the ["Code" view](./measure-kernel-mcdc.md?plain=1) of this page, search
+for "Sanity check" hidden in comments and follow the instructions there.
