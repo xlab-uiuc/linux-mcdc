@@ -9,7 +9,7 @@ cd $MCDC_HOME/linux
 $MCDC_HOME/linux-mcdc/scripts/q -c "$GUEST_COMMANDS"
 
 file profraw |& tee /tmp/file.log
-if ! grep "LLVM raw profile data, version 9" /tmp/file.log > /dev/null; then
+if ! grep "LLVM raw profile data, version 10" /tmp/file.log > /dev/null; then
     printf "\nUnexpected profraw\n"
     exit 1
 fi

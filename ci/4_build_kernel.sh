@@ -24,9 +24,6 @@ make LLVM=1 olddefconfig
 ./scripts/config -e CONFIG_MCDC_CLANG
 make LLVM=1 olddefconfig
 
-./scripts/config -d CONFIG_DRM_I915
-make LLVM=1 olddefconfig
-
 cat << EOF
 Building the kernel with output suppressed. The log tail will be displayed once
 the process finishes. See the full log in the next step.
