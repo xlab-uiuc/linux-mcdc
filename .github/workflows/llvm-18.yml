@@ -1,0 +1,102 @@
+name: Test workflow with LLVM 18
+
+on:
+  push:
+    branches:
+    - public-approved
+  workflow_dispatch:
+
+env:
+  MCDC_HOME: /home/github-runner/mcdc-workdir
+
+jobs:
+  find_runner:
+    name: Find an available self-hosted runner
+    runs-on: self-hosted
+    # Enforce this same runner for all later jobs that depend on this one
+    # FIXME this requires each runner has a label the same as its name
+    outputs:
+      runner_name: ${{ runner.name }}
+    # Dummy, do nothing
+    steps:
+    - uses: actions/checkout@v4
+
+  install_deps:
+    name: 1. Install dependencies
+    needs: find_runner
+    # Enforce the same runner
+    runs-on: ${{ needs.find_runner.outputs.runner_name }}
+    outputs:
+      runner_name: ${{ runner.name }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: ./ci/1_install_deps.sh
+
+  pull_source:
+    name: 2. Pull the source code and apply patches
+    needs: install_deps
+    # Enforce the same runner
+    runs-on: ${{ needs.install_deps.outputs.runner_name }}
+    outputs:
+      runner_name: ${{ runner.name }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Create a workspace from clean slate
+      run: |
+        rm -rf $MCDC_HOME
+        mkdir -p $MCDC_HOME
+    - name: Pull the source code and apply patches
+      run: ./ci/2_pull_source.sh
+
+  get_llvm:
+    name: 3. Get LLVM
+    needs: pull_source
+    # Enforce the same runner
+    runs-on: ${{ needs.pull_source.outputs.runner_name }}
+    outputs:
+      runner_name: ${{ runner.name }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build from source
+      run: ./ci/3_get_llvm.sh
+    - name: Print LLVM build resource usage
+      run: |
+        cat /tmp/time.log
+        du -sh $MCDC_HOME/llvm-project
+
+  build_kernel:
+    name: 4. Build the kernel
+    needs: get_llvm
+    # Enforce the same runner
+    runs-on: ${{ needs.get_llvm.outputs.runner_name }}
+    outputs:
+      runner_name: ${{ runner.name }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up LLVM path
+      run: echo "$MCDC_HOME/llvm-project/build/bin" >> $GITHUB_PATH
+    - name: Build the kernel
+      run: ./ci/4_build_kernel.sh
+    - name: Print full kernel build log
+      run: cat /tmp/make.log
+    - name: Print kernel build resource usage
+      run: |
+        cat /tmp/time.log
+        du -sh $MCDC_HOME/linux
+
+  boot_kernel_and_collect_coverage:
+    name: 5. Boot the kernel and collect coverage
+    needs: build_kernel
+    # Enforce the same runner
+    runs-on: ${{ needs.build_kernel.outputs.runner_name }}
+    outputs:
+      runner_name: ${{ runner.name }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up LLVM path
+      run: echo "$MCDC_HOME/llvm-project/build/bin" >> $GITHUB_PATH
+    - name: Boot the kernel and collect coverage
+      run: ./ci/5_boot_kernel_and_collect_coverage.sh
+    - name: Print the index of coverage report
+      run: cat $MCDC_HOME/analysis/text-coverage-reports/index.txt
