@@ -1,9 +1,9 @@
-name: Test workflow with LLVM 18
+name: Test workflow with LLVM 19
 
 on:
   push:
     branches:
-    - public-approved
+    - llvm19
   workflow_dispatch:
 
 env:
