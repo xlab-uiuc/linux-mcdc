@@ -76,6 +76,10 @@ jobs:
     - uses: actions/checkout@v4
     - name: Set up LLVM path
       run: echo "$MCDC_HOME/llvm-project/build/bin" >> $GITHUB_PATH
+    - name: Print toolchain version
+      run: |
+        clang -v
+        llc --version
     - name: Build the kernel
       run: ./ci/4_build_kernel.sh
     - name: Print full kernel build log
@@ -96,6 +100,10 @@ jobs:
     - uses: actions/checkout@v4
     - name: Set up LLVM path
       run: echo "$MCDC_HOME/llvm-project/build/bin" >> $GITHUB_PATH
+    - name: Print toolchain version
+      run: |
+        clang -v
+        llc --version
     - name: Boot the kernel and collect coverage
       run: ./ci/5_boot_kernel_and_collect_coverage.sh
     - name: Print the index of coverage report
