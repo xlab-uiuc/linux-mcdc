@@ -167,8 +167,7 @@ groups of options:
     can find more detailed explanation for each.
 
 4. Exclude one option from the default config, due to a toolchain bug we are
-   investigating (similar to https://github.com/llvm/llvm-project/issues/87000
-   and https://github.com/llvm/llvm-project/issues/92216):
+   investigating (similar to https://github.com/llvm/llvm-project/issues/92216):
 
     ```shell
     ./scripts/config -d CONFIG_DRM_I915
