@@ -30,7 +30,7 @@ index 1c4e329fa..bfcb36562 100644
  export CFLAGS_SCC_CLANG
 
 -CFLAGS_MCDC_CLANG := -fcoverage-mcdc
-+CFLAGS_MCDC_CLANG := -fcoverage-mcdc -Xclang -fmcdc-max-conditions=32
++CFLAGS_MCDC_CLANG := -fcoverage-mcdc -Xclang -fmcdc-max-conditions=40
  export CFLAGS_MCDC_CLANG
 
  CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage
