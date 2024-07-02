@@ -88,6 +88,9 @@ jobs:
       run: |
         cat /tmp/time.log
         du -sh $MCDC_HOME/linux
+    - name: Print kernel binary layout
+      run: |
+        llvm-readelf --sections -W $MCDC_HOME/linux/vmlinux
 
   boot_kernel_and_collect_coverage:
     name: 5. Boot the kernel and collect coverage
