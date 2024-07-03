@@ -139,5 +139,9 @@ jobs:
         llc --version
     - name: Boot the kernel and collect coverage
       run: ./ci/5_boot_kernel_and_collect_coverage.sh
+    - name: Print the index of coverage report (immediately after counter reset)
+      run: cat $MCDC_HOME/analysis_cnts_reset/text-coverage-reports/index.txt
+    - name: Print the index of coverage report (immediately after bitmap reset)
+      run: cat $MCDC_HOME/analysis_bits_reset/text-coverage-reports/index.txt
     - name: Print the index of coverage report
       run: cat $MCDC_HOME/analysis/text-coverage-reports/index.txt
