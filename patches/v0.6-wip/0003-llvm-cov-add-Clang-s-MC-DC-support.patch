@@ -1,0 +1,87 @@
+From aee9c7cb924a1546c6fc7666cbed8d5f8bcc503f Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <zhangwt1997@gmail.com>
+Date: Tue, 2 Jul 2024 22:47:44 -0500
+Subject: [RFC PATCH 3/3] llvm-cov: add Clang's MC/DC support
+
+Add Clang flags and kconfig options for measuring the kernel's modified
+condition/decision coverage (MC/DC).
+
+Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+---
+ Makefile                |  6 ++++++
+ kernel/llvm-cov/Kconfig | 21 +++++++++++++++++++++
+ scripts/Makefile.lib    | 11 +++++++++++
+ 3 files changed, 38 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 845e8a6d0..b2a759dc3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -688,6 +688,12 @@ all: vmlinux
+ CFLAGS_LLVM_COV := -fprofile-instr-generate -fcoverage-mapping
+ export CFLAGS_LLVM_COV
+ 
++CFLAGS_LLVM_COV_MCDC := -fcoverage-mcdc
++ifdef CONFIG_LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS
++CFLAGS_LLVM_COV_MCDC += -Xclang -fmcdc-max-conditions=$(CONFIG_LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS)
++endif
++export CFLAGS_LLVM_COV_MCDC
++
+ CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage
+ ifdef CONFIG_CC_IS_GCC
+ CFLAGS_GCOV	+= -fno-tree-loop-im
+diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
+index 505eba5bd..e20fd887e 100644
+--- a/kernel/llvm-cov/Kconfig
++++ b/kernel/llvm-cov/Kconfig
+@@ -26,4 +26,25 @@ config LLVM_COV_KERNEL
+ 	  Note that the debugfs filesystem has to be mounted to access the raw
+ 	  profile.
+ 
++config LLVM_COV_KERNEL_MCDC
++	bool "Enable measuring modified condition/decision coverage (MC/DC)"
++	depends on LLVM_COV_KERNEL
++	depends on CLANG_VERSION >= 180000
++	help
++	  This option enables measuring kernel's modified condition/decision
++	  coverage (MC/DC) with Clang's Source-based Code Coverage.
++
++	  If unsure, say N.
++
++config LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS
++	int "Maximum number of conditions in a decision to instrument"
++	range 6 32767
++	depends on LLVM_COV_KERNEL_MCDC
++	depends on CLANG_VERSION >= 190000
++	default "6"
++	help
++	  This value is passed to "-fmcdc-max-conditions" flag of Clang cc1.
++	  Expressions whose number of conditions is greater than this value will
++	  produce warnings and will not be instrumented.
++
+ endmenu
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index df31ad23b..f8368686a 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -160,6 +160,17 @@ _c_flags += $(if $(patsubst n%,, \
+ 		$(CFLAGS_LLVM_COV))
+ endif
+ 
++#
++# Flag that turns on modified condition/decision coverage (MC/DC) measurement
++# with Clang's Source-based Code Coverage. Enable the flag for a file or
++# directory depending on variables LLVM_COV_PROFILE_obj.o and LLVM_COV_PROFILE.
++#
++ifeq ($(CONFIG_LLVM_COV_KERNEL_MCDC),y)
++_c_flags += $(if $(patsubst n%,, \
++		$(LLVM_COV_PROFILE_$(basetarget).o)$(LLVM_COV_PROFILE)y), \
++		$(CFLAGS_LLVM_COV_MCDC))
++endif
++
+ #
+ # Enable address sanitizer flags for kernel except some files or directories
+ # we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
+-- 
+2.34.1
+
