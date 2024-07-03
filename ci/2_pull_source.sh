@@ -14,3 +14,4 @@ cd $MCDC_HOME/linux
 git apply $MCDC_HOME/linux-mcdc/patches/v0.6-wip/0001-llvm-cov-add-Clang-s-Source-based-Code-Coverage-supp.patch
 git apply $MCDC_HOME/linux-mcdc/patches/v0.6-wip/0002-kbuild-llvm-cov-disable-instrumentation-in-odd-or-se.patch
 git apply $MCDC_HOME/linux-mcdc/patches/v0.6-wip/0003-llvm-cov-add-Clang-s-MC-DC-support.patch
+git apply $MCDC_HOME/linux-mcdc/patches/v0.5/0004-kbuild-clang_instr_profile-disable-instrumentation-i.patch
