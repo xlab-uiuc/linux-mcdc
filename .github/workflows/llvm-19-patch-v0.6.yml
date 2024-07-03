@@ -1,9 +1,9 @@
-name: Test workflow with LLVM 19
+name: Test workflow with LLVM 19 and kernel patch v0.6
 
 on:
   push:
     branches:
-    - llvm19
+    - v0.6-wip
   workflow_dispatch:
 
 env:
