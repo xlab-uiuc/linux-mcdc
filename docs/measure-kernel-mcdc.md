@@ -163,7 +163,7 @@ groups of options:
     ```shell
     ./scripts/config -e CONFIG_LLVM_COV_KERNEL
     ./scripts/config -e CONFIG_LLVM_COV_KERNEL_MCDC
-    ./scripts/config --set-val LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS 6
+    ./scripts/config --set-val LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS 44
     make LLVM=1 olddefconfig
     ```
 
@@ -198,7 +198,7 @@ All should print "y".
 
   ./scripts/config -s LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS
 
-It should print "6".
+It should print "44".
 
 -->
 

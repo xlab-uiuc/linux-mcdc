@@ -21,7 +21,7 @@ make LLVM=1 olddefconfig
 
 ./scripts/config -e CONFIG_LLVM_COV_KERNEL
 ./scripts/config -e CONFIG_LLVM_COV_KERNEL_MCDC
-./scripts/config --set-val LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS 6
+./scripts/config --set-val LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS 44
 make LLVM=1 olddefconfig
 
 cat << EOF
