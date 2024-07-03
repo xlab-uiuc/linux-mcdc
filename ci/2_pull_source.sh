@@ -36,3 +36,22 @@ index 1c4e329fa..bfcb36562 100644
  CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage
 EOF
 git apply /tmp/revert_condition_limit.diff
+
+cat << EOF > /tmp/force_linking.diff
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 412ab19aa..9ff93b586 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -495,8 +495,10 @@ SECTIONS
+ /*
+  * The ASSERT() sink to . is intentional, for binutils 2.14 compatibility:
+  */
++/*
+ . = ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
+ 	   "kernel image bigger than KERNEL_IMAGE_SIZE");
++*/
+
+ #ifdef CONFIG_X86_64
+ /*
+EOF
+git apply /tmp/force_linking.diff
