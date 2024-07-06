@@ -3,7 +3,7 @@ name: Test workflow with LLVM 19
 on:
   push:
     branches:
-    - llvm19
+    - num-cond-threshold
   workflow_dispatch:
 
 env:
