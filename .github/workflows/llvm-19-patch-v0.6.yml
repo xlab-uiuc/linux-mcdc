@@ -1,4 +1,4 @@
-name: Test workflow with LLVM 19 and kernel patch v0.6
+name: Test workflow with LLVM 19 and kernel patch v0.6 wip
 
 on:
   push:
