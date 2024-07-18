@@ -74,6 +74,7 @@ cd $MCDC_HOME/linux
 git apply $MCDC_HOME/linux-mcdc/patches/v0.6/0001-llvm-cov-add-Clang-s-Source-based-Code-Coverage-supp.patch
 git apply $MCDC_HOME/linux-mcdc/patches/v0.6/0002-kbuild-llvm-cov-disable-instrumentation-in-odd-or-se.patch
 git apply $MCDC_HOME/linux-mcdc/patches/v0.6/0003-llvm-cov-add-Clang-s-MC-DC-support.patch
+git apply $MCDC_HOME/linux-mcdc/patches/v0.6/0004-kbuild-llvm-cov-disable-instrumentation-in-odd-or-se.patch
 ```
 
 ## 3. Get LLVM
