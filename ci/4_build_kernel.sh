@@ -19,9 +19,9 @@ make LLVM=1 olddefconfig
 ./scripts/config -e CONFIG_KUNIT_ALL_TESTS
 make LLVM=1 olddefconfig
 
-./scripts/config -e CONFIG_INSTR_PROFILE_CLANG
-./scripts/config -e CONFIG_SCC_CLANG
-./scripts/config -e CONFIG_MCDC_CLANG
+./scripts/config -e CONFIG_LLVM_COV_KERNEL
+./scripts/config -e CONFIG_LLVM_COV_KERNEL_MCDC
+./scripts/config --set-val LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS 44
 make LLVM=1 olddefconfig
 
 cat << EOF

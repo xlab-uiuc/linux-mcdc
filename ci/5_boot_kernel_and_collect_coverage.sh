@@ -2,8 +2,8 @@
 
 GUEST_COMMANDS="true"
 GUEST_COMMANDS="$GUEST_COMMANDS; uname -a"
-GUEST_COMMANDS="$GUEST_COMMANDS; ls /sys/kernel/debug/clang_instr_profile"
-GUEST_COMMANDS="$GUEST_COMMANDS; cp /sys/kernel/debug/clang_instr_profile/profraw ."
+GUEST_COMMANDS="$GUEST_COMMANDS; ls /sys/kernel/debug/llvm-cov"
+GUEST_COMMANDS="$GUEST_COMMANDS; cp /sys/kernel/debug/llvm-cov/profraw ."
 
 cd $MCDC_HOME/linux
 $MCDC_HOME/linux-mcdc/scripts/q -c "$GUEST_COMMANDS"
