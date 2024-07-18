@@ -30,11 +30,7 @@ linux-mcdc
 │
 ├── patches
 │   ├── README.md
-│   └── {v0.4,v0.5}
-│       ├── 0000-cover-letter.patch
-│       ├── 0001-clang_instr_profile-add-Clang-s-Source-based-Code-Co.patch
-│       ├── 0002-kbuild-clang_instr_profile-disable-instrumentation-i.patch
-│       └── 0003-clang_instr_profile-add-Clang-s-MC-DC-support.patch
+│   └── {v0.4,v0.5,v0.6}
 │
 ├── screenshot.png
 └── README.md
