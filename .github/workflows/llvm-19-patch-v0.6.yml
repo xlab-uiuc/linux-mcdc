@@ -6,6 +6,36 @@ on:
     - v0.6-wip
   workflow_dispatch:
 
+# Allow at most one run from any workflow in this repo at the same time, as most
+# of them will operate on some shared directories of self-hosted runners and
+# interfere with each other. Without this setting, the below could happen:
+#
+#                T1      T2      T3      T4
+#     runner1 -(R1J1--------------------R1J2)-
+#             ---------(R2J1----R2J2)---------
+#
+# Now:
+#
+#                T1      T2      T3      T4      T5      T6
+#     runner1 -(R1J1----R1J2)--xxxxxxxxxxxxxx--xxxxxxxxxxxxxx-
+#             -xxxxxxxxxxxxxx--(R2J1----R2J2)--xxxxxxxxxxxxxx-
+#     runner2 -xxxxxxxxxxxxxx--xxxxxxxxxxxxxx--(R3J1----R3J2)-
+#
+# Ideally we want a single runner to finish all jobs from a workflow before
+# accepting any other job. But I don't know how.
+#
+#                T1      T2      T3      T4      T5      T6
+#     runner1 -(R1J1----R1J2)--xxxxxxxxxxxxxx-----------------
+#             -xxxxxxxxxxxxxx--(R3J1----R3J2)-----------------
+#     runner2 ---------(R2J1----R2J2)--xxxxxxxxxxxxxx---------
+#             ---------xxxxxxxxxxxxxx--(R4J1----R4J2)---------
+#
+# Or maybe we should redesign the abstraction: what ought to be workflows? what
+# ought to be jobs? and what ought to be steps?
+
+concurrency:
+  group: xlab-uiuc/linux-mcdc
+
 env:
   MCDC_HOME: /home/github-runner/mcdc-workdir
 
