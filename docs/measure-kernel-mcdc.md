@@ -65,20 +65,15 @@ export MCDC_HOME=$(realpath .)
 # This meta repository
 git clone https://github.com/xlab-uiuc/linux-mcdc.git --branch llvm19
 # LLVM if we want to build it from source (optional)
-git clone https://github.com/llvm/llvm-project.git --branch main
+git clone https://github.com/llvm/llvm-project.git --branch main --depth 5
 # Linux kernel
 git clone https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git --branch v5.15.153 --depth 5
 
-# Use the snapshot of LLVM on June 11 2024
-cd $MCDC_HOME/llvm-project
-git checkout f5dcfb9968a3
-
 # Apply kernel patches
 cd $MCDC_HOME/linux
-git apply $MCDC_HOME/linux-mcdc/patches/v0.5/0001-clang_instr_profile-add-Clang-s-Source-based-Code-Co.patch
-git apply $MCDC_HOME/linux-mcdc/patches/v0.5/0002-kbuild-clang_instr_profile-disable-instrumentation-i.patch
-git apply $MCDC_HOME/linux-mcdc/patches/v0.5/0003-clang_instr_profile-add-Clang-s-MC-DC-support.patch
-git apply $MCDC_HOME/linux-mcdc/patches/v0.5/0004-kbuild-clang_instr_profile-disable-instrumentation-i.patch
+git apply $MCDC_HOME/linux-mcdc/patches/v0.6/0001-llvm-cov-add-Clang-s-Source-based-Code-Coverage-supp.patch
+git apply $MCDC_HOME/linux-mcdc/patches/v0.6/0002-kbuild-llvm-cov-disable-instrumentation-in-odd-or-se.patch
+git apply $MCDC_HOME/linux-mcdc/patches/v0.6/0003-llvm-cov-add-Clang-s-MC-DC-support.patch
 ```
 
 ## 3. Get LLVM
@@ -165,16 +160,19 @@ groups of options:
 3. **Enable MC/DC**.
 
     ```shell
-    ./scripts/config -e CONFIG_INSTR_PROFILE_CLANG
-    ./scripts/config -e CONFIG_SCC_CLANG
-    ./scripts/config -e CONFIG_MCDC_CLANG
+    ./scripts/config -e CONFIG_LLVM_COV_KERNEL
+    ./scripts/config -e CONFIG_LLVM_COV_KERNEL_MCDC
+    ./scripts/config --set-val LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS 44
     make LLVM=1 olddefconfig
     ```
 
     They are the options added by [our kernel patch](../patches/). In menuconfig
     mode, they are located under path -> "General architecture-dependent options"
-    -> "Clang's instrumentation-based kernel profiling (EXPERIMENTAL)" where we
+    -> "Clang's source-based kernel coverage measurement (EXPERIMENTAL)" where we
     can find more detailed explanation for each.
+
+    About `LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS` and its value, please refer to
+    [this issue](https://github.com/xlab-uiuc/linux-mcdc/issues/5).
 
 <!--
 
@@ -192,11 +190,14 @@ $ ./scripts/config -s CONFIG_9P_FS_POSIX_ACL     &&\
   ./scripts/config -s CONFIG_MAGIC_SYSRQ         &&\
   ./scripts/config -s CONFIG_KUNIT               &&\
   ./scripts/config -s CONFIG_KUNIT_ALL_TESTS     &&\
-  ./scripts/config -s CONFIG_INSTR_PROFILE_CLANG &&\
-  ./scripts/config -s CONFIG_SCC_CLANG           &&\
-  ./scripts/config -s CONFIG_MCDC_CLANG
+  ./scripts/config -s CONFIG_LLVM_COV_KERNEL     &&\
+  ./scripts/config -s CONFIG_LLVM_COV_KERNEL_MCDC
 
 All should print "y".
+
+  ./scripts/config -s LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS
+
+It should print "44".
 
 -->
 
@@ -229,13 +230,18 @@ to verify the sections for counters and bitmaps are indeed included.
 > the end of building (LD, KSYMS etc).
 >
 > This is expected. The warnings are due to
-> [two limitations](https://releases.llvm.org/18.1.0/tools/clang/docs/SourceBasedCodeCoverage.html#mc-dc-instrumentation)
+> [two limitations](https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#mc-dc-instrumentation)
 > of the current MC/DC implementation in Clang.
 > Extra overhead is brought by code instrumentation (counters, bitmaps, MOV and
 > ADD instructions to increment the counters), and
 > [coverage mapping](https://releases.llvm.org/18.1.0/docs/CoverageMappingFormat.html)
 > in order to associate such information with the actual source code locations.
 > Together they lead to larger binary size and longer linking time.
+
+<!-- The limitation on the number of conditions has changed by
+     https://github.com/llvm/llvm-project/pull/82448, which is a major
+     difference between our kernel patch v0.5 and v0.6. Since we don't have 19
+     releases yet. Point to the latest documentation.                        -->
 
 ## 5. Boot the kernel and collect coverage
 
@@ -291,12 +297,13 @@ Let's inspect the directory added to debugfs by our patch:
 
 ```shell
 # (guest)
-ls /sys/kernel/debug/clang_instr_profile
+ls /sys/kernel/debug/llvm-cov
 ```
 
-which should contain two pseudo files: `profraw` and `reset`.
+which should contain three pseudo files: `profraw`, `cnts_reset` and `bits_reset`.
 
-- Writing to `reset` will clear the in-memory counters and bitmaps
+- Writing to `cnts_reset` will clear the in-memory counters
+- Writing to `bits_reset` will clear the in-memory bitmaps
 - Reading `profraw` will serialize the in-memory counters and bitmaps in a
   [proper format](https://llvm.org/docs/InstrProfileFormat.html)
   <!-- The essential difference between LLVM 18 and 19 is this format. Since we
@@ -310,7 +317,7 @@ machine.
 
 ```shell
 # (guest)
-cp /sys/kernel/debug/clang_instr_profile/profraw .
+cp /sys/kernel/debug/llvm-cov/profraw .
 ```
 
 Press Ctrl+D to exit the VM. We will get back to `$MCDC_HOME/linux` of the host
