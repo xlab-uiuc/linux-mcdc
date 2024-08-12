@@ -3,7 +3,7 @@ name: Test workflow with LLVM 18
 on:
   push:
     branches:
-    - public-approved
+    - llvm-18
   workflow_dispatch:
 
 # Allow at most one run from any workflow in this repo at the same time, as most

@@ -1,16 +1,16 @@
 # Measure Linux kernel's modified condition/decision coverage (MC/DC)
 
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-19.yml?label=LLVM%2019)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-19.yml)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-trunk.yml?label=LLVM%20trunk)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-trunk.yml)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-18.yml?label=LLVM%2018)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-18.yml)
 
-Example text coverage report: [link](https://github.com/xlab-uiuc/linux-mcdc/actions/runs/9639450937/job/26582312842#step:5:7)
+Example text coverage report: [link](https://github.com/xlab-uiuc/linux-mcdc/actions/runs/10013137034/job/27681036852#step:8:7) (login with any GitHub account required)
 
 Example HTML coverage report:
 
 <img src="screenshot.png" width="70%">
 
-[[Get started (LLVM 19)](https://github.com/xlab-uiuc/linux-mcdc/blob/llvm19/docs/measure-kernel-mcdc.md)]
-            [[(LLVM 18)](https://github.com/xlab-uiuc/linux-mcdc/blob/public-approved/docs/measure-kernel-mcdc.md)]
+[[Get started (LLVM trunk)](https://github.com/xlab-uiuc/linux-mcdc/blob/llvm-trunk/docs/measure-kernel-mcdc.md)]
+            [[(LLVM 18)](https://github.com/xlab-uiuc/linux-mcdc/blob/llvm-18/docs/measure-kernel-mcdc.md)]
 
 More materials will be posted here as soon as they are approved. Please stay
 tuned!
