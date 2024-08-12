@@ -1,9 +1,9 @@
-name: Test workflow with LLVM trunk (old)
+name: Test workflow with LLVM trunk
 
 on:
   push:
     branches:
-    - llvm19
+    - llvm-trunk
   workflow_dispatch:
 
 # Allow at most one run from any workflow in this repo at the same time, as most

@@ -2,8 +2,8 @@
 
 > [!NOTE]
 >
-> The following instructions use **LLVM 19** and patch >= v0.5. The differences
-> between LLVM 18 and 19 can be found [here](https://github.com/xlab-uiuc/linux-mcdc/compare/public-approved...llvm19).
+> The following instructions use LLVM >= 19 and patch >= v0.5. The differences
+> between LLVM 18 and >= 19 can be found [here](https://github.com/xlab-uiuc/linux-mcdc/compare/llvm-18...llvm-trunk).
 
 ## 0. Prerequisites
 
@@ -63,7 +63,7 @@ cd /path/to/our/workdir
 export MCDC_HOME=$(realpath .)
 
 # This meta repository
-git clone https://github.com/xlab-uiuc/linux-mcdc.git --branch llvm19
+git clone https://github.com/xlab-uiuc/linux-mcdc.git --branch llvm-trunk
 # LLVM if we want to build it from source (optional)
 git clone https://github.com/llvm/llvm-project.git --branch main --depth 5
 # Linux kernel
@@ -110,16 +110,16 @@ wget https://apt.llvm.org/llvm.sh
 chmod +x llvm.sh
 ```
 
-Install LLVM 19:
+Install LLVM 20:
 
 ```shell
-sudo ./llvm.sh 19
+sudo ./llvm.sh 20
 ```
 
 After installation, set $PATH up:
 
 ```shell
-export PATH="/usr/lib/llvm-19/bin:$PATH"
+export PATH="/usr/lib/llvm-20/bin:$PATH"
 ```
 
 ## 4. Build the kernel
@@ -241,8 +241,8 @@ to verify the sections for counters and bitmaps are indeed included.
 
 <!-- The limitation on the number of conditions has changed by
      https://github.com/llvm/llvm-project/pull/82448, which is a major
-     difference between our kernel patch v0.5 and v0.6. Since we don't have 19
-     releases yet. Point to the latest documentation.                        -->
+     difference between our kernel patch v0.5 and v0.6. Since we don't have
+     >= 19 releases yet. Point to the latest documentation.                  -->
 
 ## 5. Boot the kernel and collect coverage
 
@@ -307,8 +307,8 @@ which should contain three pseudo files: `profraw`, `cnts_reset` and `bits_reset
 - Writing to `bits_reset` will clear the in-memory bitmaps
 - Reading `profraw` will serialize the in-memory counters and bitmaps in a
   [proper format](https://llvm.org/docs/InstrProfileFormat.html)
-  <!-- The essential difference between LLVM 18 and 19 is this format. Since we
-       don't have 19 releases yet. Point to the latest documentation.        -->
+  <!-- The essential difference between LLVM 18 and >= 19 is this format. Since
+       we don't have >= 19 releases yet. Point to the latest documentation.  -->
   that is recognized by LLVM tools.
 
 Let's copy the profile to current directory, which is [shared with host

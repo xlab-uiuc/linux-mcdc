@@ -3,7 +3,7 @@
 cd $MCDC_HOME
 
 # This meta repository
-git clone https://github.com/xlab-uiuc/linux-mcdc.git --branch llvm19
+git clone https://github.com/xlab-uiuc/linux-mcdc.git --branch llvm-trunk
 # LLVM if we want to build it from source (optional)
 git clone https://github.com/llvm/llvm-project.git --depth 5
 # Linux kernel
