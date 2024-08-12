@@ -1,4 +1,4 @@
-name: Test workflow with LLVM 19
+name: Test workflow with LLVM trunk (old)
 
 on:
   push:
