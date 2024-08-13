@@ -205,10 +205,10 @@ index 000000000..f6a236562
 +obj-y	+= fs.o
 diff --git a/kernel/llvm-cov/fs.c b/kernel/llvm-cov/fs.c
 new file mode 100644
-index 000000000..93586a294
+index 000000000000..917ca50d0496
 --- /dev/null
 +++ b/kernel/llvm-cov/fs.c
-@@ -0,0 +1,275 @@
+@@ -0,0 +1,253 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2019	Sami Tolvanen <samitolvanen@google.com>, Google, Inc.
@@ -411,41 +411,23 @@ index 000000000..93586a294
 +	.release	= llvm_cov_release
 +};
 +
-+/* write() implementation for llvm-cov counter reset file */
-+static ssize_t cnts_reset_write(struct file *file, const char __user *addr,
++/* write() implementation for llvm-cov reset file */
++static ssize_t reset_write(struct file *file, const char __user *addr,
 +			   size_t len, loff_t *pos)
 +{
 +	unsigned long flags;
 +
 +	flags = llvm_cov_claim_lock();
 +	memset(__llvm_prf_cnts_start, 0, __llvm_prf_cnts_size());
-+	llvm_cov_release_lock(flags);
-+
-+	return len;
-+}
-+
-+/* write() implementation for llvm-cov bitmap reset file */
-+static ssize_t bits_reset_write(struct file *file, const char __user *addr,
-+			   size_t len, loff_t *pos)
-+{
-+	unsigned long flags;
-+
-+	flags = llvm_cov_claim_lock();
 +	memset(__llvm_prf_bits_start, 0, __llvm_prf_bits_size());
 +	llvm_cov_release_lock(flags);
 +
 +	return len;
 +}
 +
-+static const struct file_operations llvm_cov_cnts_reset_fops = {
++static const struct file_operations llvm_cov_reset_fops = {
 +	.owner		= THIS_MODULE,
-+	.write		= cnts_reset_write,
-+	.llseek		= noop_llseek,
-+};
-+
-+static const struct file_operations llvm_cov_bits_reset_fops = {
-+	.owner		= THIS_MODULE,
-+	.write		= bits_reset_write,
++	.write		= reset_write,
 +	.llseek		= noop_llseek,
 +};
 +
@@ -460,12 +442,8 @@ index 000000000..93586a294
 +				 &llvm_cov_data_fops))
 +		goto err_remove;
 +
-+	if (!debugfs_create_file("cnts_reset", 0200, directory, NULL,
-+				 &llvm_cov_cnts_reset_fops))
-+		goto err_remove;
-+
-+	if (!debugfs_create_file("bits_reset", 0200, directory, NULL,
-+				 &llvm_cov_bits_reset_fops))
++	if (!debugfs_create_file("reset", 0200, directory, NULL,
++				 &llvm_cov_reset_fops))
 +		goto err_remove;
 +
 +	return 0;
@@ -484,6 +462,7 @@ index 000000000..93586a294
 +
 +module_init(llvm_cov_init);
 +module_exit(llvm_cov_exit);
+\ No newline at end of file
 diff --git a/kernel/llvm-cov/llvm-cov.h b/kernel/llvm-cov/llvm-cov.h
 new file mode 100644
 index 000000000..d9551a685
