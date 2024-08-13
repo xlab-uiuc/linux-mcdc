@@ -1,0 +1,151 @@
+From 0f3be98299c1331dd6a8d1fb0ad7bf94f18f2ebe Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <wentaoz5@illinois.edu>
+Date: Thu, 18 Jul 2024 13:14:06 -0500
+Subject: [RFC PATCH 0/3] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
+
+This patch series adds support for building x86-64 kernels with Clang's Source-
+based Code Coverage and measuring modified condition/decision coverage (MC/DC).
+
+The newly added kernel/llvm-cov/ directory complements the existing gcov
+implementation. gcov works at a lower level and may better reflect the actual
+execution of object code. However, it lacks the necessary information to connect
+coverage measurement back to source code locations and gcov reports are
+sometimes confusing. With a nonzero optimization level (which is the default
+when building the kernel), it's even harder to rebuild the mapping between
+coverage reports and source code. In the following example from
+drivers/firmware/dmi_scan.c, an expression with four leaf conditions are
+reported to have six branch outcomes, which is not ideally informative in many
+use cases.
+
+        5: 1068:	if (s == e || *e != '/' || !month || month > 12) {
+branch  0 taken 5 (fallthrough)
+branch  1 taken 0
+branch  2 taken 5 (fallthrough)
+branch  3 taken 0
+branch  4 taken 0 (fallthrough)
+branch  5 taken 5
+
+On the other hand, Clang's Source-based Code Coverage [1] does instrumentation
+at the compiler frontend and maintains accurate mapping from coverage measure to
+source code locations. The generated reports can reflect exactly how the code is
+written regardless of optimization and can present advanced metrics like branch
+coverage and MC/DC in a more human-friendly way. Coverage report for the same
+snippet by llvm-cov would look like the below:
+
+ 1068|      5|	if (s == e || *e != '/' || !month || month > 12) {
+  ------------------
+  |  Branch (1068:6): [True: 0, False: 5]
+  |  Branch (1068:16): [True: 0, False: 5]
+  |  Branch (1068:29): [True: 0, False: 5]
+  |  Branch (1068:39): [True: 0, False: 5]
+  ------------------
+
+Clang has also added MC/DC support since its release 18.1.0. MC/DC is a fine-
+grained coverage metric required by many automotive and aviation industrial
+standards for certifying mission-critical software [2]. In the following example
+from arch/x86/events/probe.c, llvm-cov gives the MC/DC measure for the decision
+at line 43.
+
+   43|     12|			if (msr[bit].test && !msr[bit].test(bit, data))
+  ------------------
+  |---> MC/DC Decision Region (43:8) to (43:50)
+  |
+  |  Number of Conditions: 2
+  |     Condition C1 --> (43:8)
+  |     Condition C2 --> (43:25)
+  |
+  |  Executed MC/DC Test Vectors:
+  |
+  |     C1, C2    Result
+  |  1 { T,  F  = F      }
+  |  2 { T,  T  = T      }
+  |
+  |  C1-Pair: not covered
+  |  C2-Pair: covered: (1,2)
+  |  MC/DC Coverage for Decision: 50.00%
+  |
+  ------------------
+   44|      5|				continue;
+
+As the results suggest, during the given span of measurement, only condition C2
+(!msr[bit].test(bit, data)) is covered. That means C2 was evaluated to both true
+and false and in those test vectors C2 affected the decision outcome
+independently. Therefore MC/DC for the shown decision is 1 out of 2 (50.00%).
+
+To do a full kernel measurement, instrument the kernel with LLVM_COV_KERNEL_MCDC
+enabled, run the testsuites, and collect the raw profile data under
+/sys/kernel/debug/llvm-cov/profraw. Such raw profile data can be merged and
+indexed, and used for generating coverage reports in various formats.
+
+  $ cp /sys/kernel/debug/llvm-cov/profraw vmlinux.profraw
+  $ llvm-profdata merge vmlinux.profraw -o vmlinux.profdata
+  $ llvm-cov show --show-mcdc --show-mcdc-summary                              \
+                  --format=text --use-color=false -output-dir=coverage_reports \
+                  -instr-profile vmlinux.profdata vmlinux
+
+The first patch in the series enables Clang's Source-based Code Coverage for the
+kernel. The second patch disables instrumenting the same set of files that were
+skipped by kernel/gcov/ as well. The third patch enables MC/DC instrumentation
+which is built on top of Source-based Code Coverage.
+
+This work reuses a portion of code from a previous effort by Sami Tolvanen et
+al. [3], but we aim for source-based *code coverage* required for high assurance
+(MC/DC) while [3] focused more on performance optimization.
+
+This initial submission is restricted to x86-64. Support for other architectures
+would need a bit more Makefile & linker script modification. Informally we've
+confirmed that arm64 works and more are being tested.
+
+Note that Source-based Code Coverage is Clang-specific and isn't compatible with
+Clang's gcov support in kernel/gcov/. Currently, kernel/gcov/ is not able to
+measure MC/DC without modifying CFLAGS_GCOV and it would face the same issues in
+terms of source correlation as gcov in general does.
+
+Some demo and results can be found in [4]. We will talk about this patch series
+in the Refereed Track of LPC 2024 [5] and would really like to hear the
+community's feedback.
+
+[1] https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
+[2] https://digital-library.theiet.org/content/journals/10.1049/sej.1994.0025
+[3] https://lore.kernel.org/linux-doc/20210407211704.367039-1-morbo@google.com/
+[4] https://github.com/xlab-uiuc/linux-mcdc
+[5] https://lpc.events/event/18/contributions/1718/
+
+Wentao Zhang (3):
+  [RFC PATCH 1/3] llvm-cov: add Clang's Source-based Code Coverage
+    support
+  [RFC PATCH 2/3] kbuild, llvm-cov: disable instrumentation in odd or
+    sensitive code
+  [RFC PATCH 3/3] llvm-cov: add Clang's MC/DC support
+
+ Makefile                              |   9 +
+ arch/Kconfig                          |   1 +
+ arch/x86/Kconfig                      |   1 +
+ arch/x86/boot/Makefile                |   1 +
+ arch/x86/boot/compressed/Makefile     |   1 +
+ arch/x86/entry/vdso/Makefile          |   1 +
+ arch/x86/kernel/vmlinux.lds.S         |   2 +
+ arch/x86/platform/efi/Makefile        |   1 +
+ arch/x86/purgatory/Makefile           |   1 +
+ arch/x86/realmode/rm/Makefile         |   1 +
+ arch/x86/um/vdso/Makefile             |   1 +
+ drivers/firmware/efi/libstub/Makefile |   2 +
+ include/asm-generic/vmlinux.lds.h     |  38 ++++
+ kernel/Makefile                       |   1 +
+ kernel/llvm-cov/Kconfig               |  51 ++++++
+ kernel/llvm-cov/Makefile              |   5 +
+ kernel/llvm-cov/fs.c                  | 253 ++++++++++++++++++++++++++
+ kernel/llvm-cov/llvm-cov.h            | 156 ++++++++++++++++
+ kernel/trace/Makefile                 |   1 +
+ scripts/Makefile.lib                  |  21 +++
+ scripts/Makefile.modfinal             |   1 +
+ scripts/mod/modpost.c                 |   2 +
+ 22 files changed, 551 insertions(+)
+ create mode 100644 kernel/llvm-cov/Kconfig
+ create mode 100644 kernel/llvm-cov/Makefile
+ create mode 100644 kernel/llvm-cov/fs.c
+ create mode 100644 kernel/llvm-cov/llvm-cov.h
+
+--
+2.34.1
+
