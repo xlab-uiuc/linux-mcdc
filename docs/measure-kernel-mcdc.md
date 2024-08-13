@@ -301,10 +301,9 @@ Let's inspect the directory added to debugfs by our patch:
 ls /sys/kernel/debug/llvm-cov
 ```
 
-which should contain three pseudo files: `profraw`, `cnts_reset` and `bits_reset`.
+which should contain two pseudo files: `profraw` and `reset`.
 
-- Writing to `cnts_reset` will clear the in-memory counters
-- Writing to `bits_reset` will clear the in-memory bitmaps
+- Writing to `reset` will clear the in-memory counters and bitmaps.
 - Reading `profraw` will serialize the in-memory counters and bitmaps in a
   [proper format](https://llvm.org/docs/InstrProfileFormat.html)
   <!-- The essential difference between LLVM 18 and >= 19 is this format. Since
