@@ -28,7 +28,7 @@ Tentative repository structure:
 ```text
 linux-mcdc
 |
-├── ci
+├── ci/{linux-v5.15.153}
 │   ├── 1_install_deps.sh
 │   ├── 2_pull_source.sh
 │   ├── 3_get_llvm.sh
