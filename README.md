@@ -3,10 +3,17 @@
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-trunk.yml?label=LLVM%20trunk)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-trunk.yml)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-18.yml?label=LLVM%2018)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-18.yml)
 
-This project demonstrates MC/DC coverage on the 5.15.y Linux kernel source tree
-using [llvm-cov](https://llvm.org/docs/CommandGuide/llvm-cov.html). Primary
+This repository demonstrates [KUnit](https://docs.kernel.org/dev-tools/kunit/index.html)'s
+modified condition/decision coverage (MC/DC) of 5.15.y Linux kernel using
+[Clang source-based code coverage](https://clang.llvm.org/docs/SourceBasedCodeCoverage.html)
+and [`llvm-cov`](https://llvm.org/docs/CommandGuide/llvm-cov.html). A patch set
+for mainline kernel is also being prepared.
+
+<!--
+Primary
 development of the kernel patch set is being performed in the [xlab-uiuc/llvm-cov](https://github.com/xlab-uiuc/linux-cov)
 project.
+-->
 
 Follow the instructions [here](docs/measure-kernel-mcdc.md) to get started.
 
