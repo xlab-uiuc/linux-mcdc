@@ -9,8 +9,8 @@
 
 - The following instructions are tested with:
     - Architecture: x86_64
-    - Distro: Ubuntu 22.04
-    - Kernel: 5.15.0-86-generic
+    - Distro: Ubuntu 22.04 and Debian trixie/sid
+    - Kernel: 5.15.0 to 5.15.153
 
     Other settings (e.g. Arm) can possibly work, but they are not fully tested.
 
