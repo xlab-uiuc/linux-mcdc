@@ -3,40 +3,49 @@
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-trunk.yml?label=LLVM%20trunk)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-trunk.yml)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-18.yml?label=LLVM%2018)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-18.yml)
 
+This project demonstrates MC/DC coverage on the 5.15.y Linux kernel source tree
+using [llvm-cov](https://llvm.org/docs/CommandGuide/llvm-cov.html). Primary
+development of the kernel patch set is being performed in the [xlab-uiuc/llvm-cov](https://github.com/xlab-uiuc/linux-cov)
+project.
+
+Follow the instructions [here](docs/measure-kernel-mcdc.md) to get started.
+
 Example text coverage report: [link](https://github.com/xlab-uiuc/linux-mcdc/actions/runs/10013137034/job/27681036852#step:8:7) (login with any GitHub account required)
 
 Example HTML coverage report:
 
 <img src="screenshot.png" width="70%">
 
-[[Get started (LLVM trunk)](https://github.com/xlab-uiuc/linux-mcdc/blob/llvm-trunk/docs/measure-kernel-mcdc.md)]
-            [[(LLVM 18)](https://github.com/xlab-uiuc/linux-mcdc/blob/llvm-18/docs/measure-kernel-mcdc.md)]
-
-More materials will be posted here as soon as they are approved. Please stay
-tuned!
-
 Tentative repository structure:
 
 ```text
 linux-mcdc
-│
+|
+├── ci
+│   ├── 1_install_deps.sh
+│   ├── 2_pull_source.sh
+│   ├── 3_get_llvm.sh
+│   ├── 4_build_kernel.sh
+│   └── 5_boot_kernel_and_collect_coverage.sh
+|
 ├── docs
-│   ├── elisa-slides.pdf
-│   └── measure-kernel-mcdc.md
-│
-├── scripts
-│   ├── build-llvm.sh
-│   └── q
-│
+│   ├── elisa-slides.pdf
+│   └── measure-kernel-mcdc.md
+|
 ├── patches
-│   ├── README.md
-│   └── {v0.4,v0.5,v0.6}
-│
+│   ├── README.md
+│   └── {v0.4,v0.5,v0.6}
+|
+├── README.md
+|
 ├── screenshot.png
-└── README.md
+|
+└── scripts
+    ├── build-llvm.sh
+    └── q
 ```
 
-We gave an ELISA seminar titled "Making Linux Fly: Towards Certified Linux
+We gave an [ELISA](https://elisa.tech/) seminar titled "Making Linux Fly: Towards Certified Linux
 Kernel".
 [[recording](https://elisa.tech/blog/2024/05/28/making-linux-fly-towards-certified-linux-kernel/)]
 [[slides](./docs/elisa-slides.pdf)]

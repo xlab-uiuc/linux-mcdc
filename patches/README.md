@@ -1,2 +1,2 @@
-Version numbers less than 1.0 indicate internal circulation before being sent
-out to the mailing list.
+Version numbers less than 1.0 indicates internal circulation before being
+submitted to the broader Linux Kernel development community.
