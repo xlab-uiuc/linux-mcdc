@@ -9,3 +9,6 @@ sudo apt-get -yq install git bc libncurses-dev wget busybox \
 
 # For booting the kernel
 sudo apt-get -yq install qemu-system-x86
+
+# Only needed in CI
+sudo apt-get -yq install jq
