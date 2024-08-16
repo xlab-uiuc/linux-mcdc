@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - llvm-trunk
+    - llvm-trunk-next
     paths:
     - '.github/workflows/**'
     - 'ci/**'
@@ -39,7 +40,7 @@ on:
 # ought to be jobs? and what ought to be steps?
 
 concurrency:
-  group: xlab-uiuc/linux-mcdc
+  group: ${{ github.repository }}
 
 env:
   MCDC_HOME: /home/github-runner/mcdc-workdir
@@ -82,7 +83,7 @@ jobs:
         rm -rf $MCDC_HOME
         mkdir -p $MCDC_HOME
     - name: Pull the source code and apply patches
-      run: ./ci/linux-v5.15.153/2_pull_source.sh
+      run: ./ci/linux-v5.15.153/2_pull_source.sh ${{ github.repository }} ${{ github.ref_name }}
 
   get_llvm:
     name: 3. Get LLVM

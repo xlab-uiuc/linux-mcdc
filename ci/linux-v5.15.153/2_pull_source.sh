@@ -1,9 +1,15 @@
 #!/bin/bash
 
+repo=${1:-"xlab-uiuc/linux-mcdc"}
+branch=${2:-"llvm-trunk-next"}
+
+echo $repo
+echo $branch
+
 cd $MCDC_HOME
 
 # This meta repository
-git clone https://github.com/xlab-uiuc/linux-mcdc.git --branch llvm-trunk
+git clone https://github.com/$repo.git --branch $branch
 # LLVM if we want to build it from source (optional)
 git clone https://github.com/llvm/llvm-project.git --depth 5
 # Linux kernel
