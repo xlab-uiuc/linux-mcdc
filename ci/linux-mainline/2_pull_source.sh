@@ -6,20 +6,25 @@ branch=${2:-"llvm-trunk-next"}
 echo $repo
 echo $branch
 
+cd $MCDC_HOME
+
+# This meta repository
+git clone https://github.com/$repo.git --branch $branch
+
 kernel_latest_tag=v$(
     curl -s https://www.kernel.org/releases.json | jq -r '.releases[0].version'
 )
 echo $kernel_latest_tag
-if [[ "$kernel_latest_tag" != "v6.11-rc3" ]]; then
+current_base=v$(
+    cat $MCDC_HOME/linux-mcdc/patches/v1.0/README.md | rev | cut -d ' ' -f 1 | cut -d . -f 2- | rev
+)
+echo $current_base
+if [[ "$kernel_latest_tag" != "$current_base" ]]; then
     echo "There are updates in upstream. Patch v1.0 needs to be rebased."
     # Fail on purpose as likely we have to resolve some conflicts
     exit 1
 fi
 
-cd $MCDC_HOME
-
-# This meta repository
-git clone https://github.com/$repo.git --branch $branch
 # LLVM if we want to build it from source (optional)
 git clone https://github.com/llvm/llvm-project.git --depth 5
 # Linux kernel
