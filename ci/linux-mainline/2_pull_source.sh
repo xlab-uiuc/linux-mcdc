@@ -28,7 +28,7 @@ fi
 # LLVM if we want to build it from source (optional)
 git clone https://github.com/llvm/llvm-project.git --depth 5
 # Linux kernel
-git clone https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git --branch $kernel_latest_tag --depth 5
+git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git --branch $kernel_latest_tag --depth 5
 
 # Apply kernel patches
 cd $MCDC_HOME/linux
