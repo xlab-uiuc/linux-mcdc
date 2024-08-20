@@ -1,6 +1,6 @@
-From 0f3be98299c1331dd6a8d1fb0ad7bf94f18f2ebe Mon Sep 17 00:00:00 2001
+From 87bf30b201d2e8a85e11e79c7f3254f8ca974f30 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
-Date: Thu, 18 Jul 2024 13:14:06 -0500
+Date: Sun, 18 Aug 2024 18:50:22 -0500
 Subject: [RFC PATCH 0/3] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
 
 This patch series adds support for building x86-64 kernels with Clang's Source-
@@ -107,7 +107,7 @@ community's feedback.
 
 [1] https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [2] https://digital-library.theiet.org/content/journals/10.1049/sej.1994.0025
-[3] https://lore.kernel.org/linux-doc/20210407211704.367039-1-morbo@google.com/
+[3] https://lore.kernel.org/lkml/20210407211704.367039-1-morbo@google.com/
 [4] https://github.com/xlab-uiuc/linux-mcdc
 [5] https://lpc.events/event/18/contributions/1718/
 

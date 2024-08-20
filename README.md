@@ -1,7 +1,8 @@
 # Measure Linux kernel's modified condition/decision coverage (MC/DC)
 
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-trunk-linux-v5.15.153.yml?label=LLVM%20trunk%2BLinux%20v5.15.153)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-trunk.yml)
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-18.yml?label=LLVM%2018%2BLinux%20v5.15.153)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-18.yml)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-trunk-linux-mainline.yml?label=LLVM%20trunk%2BLinux%20mainline)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-trunk-linux-mainline.yml)
+
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/xlab-uiuc/linux-mcdc/llvm-trunk-linux-v5.15.153.yml?label=LLVM%20trunk%2BLinux%20v5.15.153)](https://github.com/xlab-uiuc/linux-mcdc/actions/workflows/llvm-trunk-linux-v5.15.153.yml)
 
 This repository demonstrates [KUnit](https://docs.kernel.org/dev-tools/kunit/index.html)'s
 modified condition/decision coverage (MC/DC) of 5.15.y Linux kernel using
