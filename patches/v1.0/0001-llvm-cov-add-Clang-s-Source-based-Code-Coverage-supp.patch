@@ -200,7 +200,7 @@ index 000000000000..a0f45e05f8fb
 \ No newline at end of file
 diff --git a/kernel/llvm-cov/fs.c b/kernel/llvm-cov/fs.c
 new file mode 100644
-index 000000000000..917ca50d0496
+index 000000000000..c56f660a174e
 --- /dev/null
 +++ b/kernel/llvm-cov/fs.c
 @@ -0,0 +1,253 @@
@@ -457,10 +457,9 @@ index 000000000000..917ca50d0496
 +
 +module_init(llvm_cov_init);
 +module_exit(llvm_cov_exit);
-\ No newline at end of file
 diff --git a/kernel/llvm-cov/llvm-cov.h b/kernel/llvm-cov/llvm-cov.h
 new file mode 100644
-index 000000000000..4a91b3c8ed72
+index 000000000000..d9551a685756
 --- /dev/null
 +++ b/kernel/llvm-cov/llvm-cov.h
 @@ -0,0 +1,156 @@
@@ -620,7 +619,6 @@ index 000000000000..4a91b3c8ed72
 +}
 +
 +#endif /* _LLVM_COV_H */
-\ No newline at end of file
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
 index fe3668dc4954..b9ceaee34b28 100644
 --- a/scripts/Makefile.lib
