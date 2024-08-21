@@ -40,7 +40,7 @@ Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
  create mode 100644 kernel/llvm-cov/llvm-cov.h
 
 diff --git a/Makefile b/Makefile
-index 68ebd6d6b..1750a2b7d 100644
+index 68ebd6d6b444..1750a2b7dfe8 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -737,6 +737,9 @@ endif # KBUILD_EXTMOD
@@ -54,7 +54,7 @@ index 68ebd6d6b..1750a2b7d 100644
  ifdef CONFIG_CC_IS_GCC
  CFLAGS_GCOV	+= -fno-tree-loop-im
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 975dd22a2..0727265f6 100644
+index 975dd22a2dbd..0727265f677f 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
 @@ -1601,6 +1601,7 @@ config ARCH_HAS_KERNEL_FPU_SUPPORT
@@ -66,7 +66,7 @@ index 975dd22a2..0727265f6 100644
  source "scripts/gcc-plugins/Kconfig"
  
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 007bab9f2..87a793b82 100644
+index 007bab9f2a0e..87a793b82bab 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
 @@ -85,6 +85,7 @@ config X86
@@ -78,7 +78,7 @@ index 007bab9f2..87a793b82 100644
  	select ARCH_HAS_MEM_ENCRYPT
  	select ARCH_HAS_MEMBARRIER_SYNC_CORE
 diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 6e73403e8..904337722 100644
+index 6e73403e874f..90433772240a 100644
 --- a/arch/x86/kernel/vmlinux.lds.S
 +++ b/arch/x86/kernel/vmlinux.lds.S
 @@ -191,6 +191,8 @@ SECTIONS
@@ -91,7 +91,7 @@ index 6e73403e8..904337722 100644
  
  	. = ALIGN(PAGE_SIZE);
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 1ae447931..770ff8469 100644
+index 1ae44793132a..770ff8469dcd 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -334,6 +334,44 @@
@@ -140,7 +140,7 @@ index 1ae447931..770ff8469 100644
  	STRUCT_ALIGN();							\
  	__dtb_start = .;						\
 diff --git a/kernel/Makefile b/kernel/Makefile
-index 3c13240df..773e6a9ee 100644
+index 3c13240dfc9f..773e6a9ee00a 100644
 --- a/kernel/Makefile
 +++ b/kernel/Makefile
 @@ -117,6 +117,7 @@ obj-$(CONFIG_HAVE_STATIC_CALL) += static_call.o
@@ -153,7 +153,7 @@ index 3c13240df..773e6a9ee 100644
  
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
 new file mode 100644
-index 000000000..b28090ba9
+index 000000000000..b28090ba926b
 --- /dev/null
 +++ b/kernel/llvm-cov/Kconfig
 @@ -0,0 +1,30 @@
@@ -189,7 +189,7 @@ index 000000000..b28090ba9
 +
 diff --git a/kernel/llvm-cov/Makefile b/kernel/llvm-cov/Makefile
 new file mode 100644
-index 000000000..a0f45e05f
+index 000000000000..a0f45e05f8fb
 --- /dev/null
 +++ b/kernel/llvm-cov/Makefile
 @@ -0,0 +1,5 @@
@@ -201,7 +201,7 @@ index 000000000..a0f45e05f
 \ No newline at end of file
 diff --git a/kernel/llvm-cov/fs.c b/kernel/llvm-cov/fs.c
 new file mode 100644
-index 000000000..917ca50d0
+index 000000000000..917ca50d0496
 --- /dev/null
 +++ b/kernel/llvm-cov/fs.c
 @@ -0,0 +1,253 @@
@@ -461,7 +461,7 @@ index 000000000..917ca50d0
 \ No newline at end of file
 diff --git a/kernel/llvm-cov/llvm-cov.h b/kernel/llvm-cov/llvm-cov.h
 new file mode 100644
-index 000000000..4a91b3c8e
+index 000000000000..4a91b3c8ed72
 --- /dev/null
 +++ b/kernel/llvm-cov/llvm-cov.h
 @@ -0,0 +1,156 @@
@@ -623,7 +623,7 @@ index 000000000..4a91b3c8e
 +#endif /* _LLVM_COV_H */
 \ No newline at end of file
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index fe3668dc4..b9ceaee34 100644
+index fe3668dc4954..b9ceaee34b28 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
 @@ -158,6 +158,16 @@ _c_flags += $(if $(patsubst n%,, \
@@ -644,7 +644,7 @@ index fe3668dc4..b9ceaee34 100644
  # Enable address sanitizer flags for kernel except some files or directories
  # we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index d16d0ace2..836c2289b 100644
+index d16d0ace2775..836c2289b8d8 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
 @@ -743,6 +743,8 @@ static const char *const section_white_list[] =
@@ -657,5 +657,5 @@ index d16d0ace2..836c2289b 100644
  };
  
 -- 
-2.34.1
+2.45.2
 

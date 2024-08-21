@@ -29,7 +29,7 @@ Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
  3 files changed, 38 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 1750a2b7d..4aa263e5f 100644
+index 1750a2b7dfe8..4aa263e5f67f 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -740,6 +740,12 @@ all: vmlinux
@@ -46,7 +46,7 @@ index 1750a2b7d..4aa263e5f 100644
  ifdef CONFIG_CC_IS_GCC
  CFLAGS_GCOV	+= -fno-tree-loop-im
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
-index b28090ba9..d388a4adc 100644
+index b28090ba926b..d388a4adc6bc 100644
 --- a/kernel/llvm-cov/Kconfig
 +++ b/kernel/llvm-cov/Kconfig
 @@ -26,5 +26,26 @@ config LLVM_COV_KERNEL
@@ -77,7 +77,7 @@ index b28090ba9..d388a4adc 100644
  endmenu
  
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index b9ceaee34..b8dfad01c 100644
+index b9ceaee34b28..b8dfad01cb52 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
 @@ -168,6 +168,17 @@ _c_flags += $(if $(patsubst n%,, \
@@ -99,5 +99,5 @@ index b9ceaee34..b8dfad01c 100644
  # Enable address sanitizer flags for kernel except some files or directories
  # we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
 -- 
-2.34.1
+2.45.2
 

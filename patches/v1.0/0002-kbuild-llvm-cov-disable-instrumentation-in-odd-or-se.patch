@@ -22,7 +22,7 @@ Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
  10 files changed, 11 insertions(+)
 
 diff --git a/arch/x86/boot/Makefile b/arch/x86/boot/Makefile
-index 9cc0ff6e9..2cc2c55af 100644
+index 9cc0ff6e9067..2cc2c55af305 100644
 --- a/arch/x86/boot/Makefile
 +++ b/arch/x86/boot/Makefile
 @@ -57,6 +57,7 @@ KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
@@ -34,7 +34,7 @@ index 9cc0ff6e9..2cc2c55af 100644
  $(obj)/bzImage: asflags-y  := $(SVGA_MODE)
  
 diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index f2051644d..86c79c36d 100644
+index f2051644de94..86c79c36db2e 100644
 --- a/arch/x86/boot/compressed/Makefile
 +++ b/arch/x86/boot/compressed/Makefile
 @@ -43,6 +43,7 @@ KBUILD_CFLAGS += -D__DISABLE_EXPORTS
@@ -46,7 +46,7 @@ index f2051644d..86c79c36d 100644
  # sev.c indirectly includes inat-table.h which is generated during
  # compilation and stored in $(objtree). Add the directory to the includes so
 diff --git a/arch/x86/entry/vdso/Makefile b/arch/x86/entry/vdso/Makefile
-index c9216ac4f..d9587b3b6 100644
+index c9216ac4fb1e..d9587b3b6bf2 100644
 --- a/arch/x86/entry/vdso/Makefile
 +++ b/arch/x86/entry/vdso/Makefile
 @@ -156,6 +156,7 @@ quiet_cmd_vdso = VDSO    $@
@@ -58,7 +58,7 @@ index c9216ac4f..d9587b3b6 100644
  quiet_cmd_vdso_and_check = VDSO    $@
        cmd_vdso_and_check = $(cmd_vdso); $(cmd_vdso_check)
 diff --git a/arch/x86/platform/efi/Makefile b/arch/x86/platform/efi/Makefile
-index 500cab4a7..a07852e8f 100644
+index 500cab4a7f7c..a07852e8f3ae 100644
 --- a/arch/x86/platform/efi/Makefile
 +++ b/arch/x86/platform/efi/Makefile
 @@ -1,6 +1,7 @@
@@ -70,7 +70,7 @@ index 500cab4a7..a07852e8f 100644
  obj-$(CONFIG_EFI) 		+= memmap.o quirks.o efi.o efi_$(BITS).o \
  				   efi_stub_$(BITS).o
 diff --git a/arch/x86/purgatory/Makefile b/arch/x86/purgatory/Makefile
-index ebdfd7b84..b4e619114 100644
+index ebdfd7b84feb..b4e619114898 100644
 --- a/arch/x86/purgatory/Makefile
 +++ b/arch/x86/purgatory/Makefile
 @@ -28,6 +28,7 @@ PURGATORY_LDFLAGS := -e purgatory_start -z nodefaultlib
@@ -82,7 +82,7 @@ index ebdfd7b84..b4e619114 100644
  # These are adjustments to the compiler flags used for objects that
  # make up the standalone purgatory.ro
 diff --git a/arch/x86/realmode/rm/Makefile b/arch/x86/realmode/rm/Makefile
-index a0fb39abc..d36338bfa 100644
+index a0fb39abc5c8..d36338bfa2ce 100644
 --- a/arch/x86/realmode/rm/Makefile
 +++ b/arch/x86/realmode/rm/Makefile
 @@ -67,3 +67,4 @@ KBUILD_CFLAGS	:= $(REALMODE_CFLAGS) -D_SETUP -D_WAKEUP \
@@ -91,7 +91,7 @@ index a0fb39abc..d36338bfa 100644
  KBUILD_CFLAGS	+= -fno-asynchronous-unwind-tables
 +LLVM_COV_PROFILE := n
 diff --git a/arch/x86/um/vdso/Makefile b/arch/x86/um/vdso/Makefile
-index 6a77ea643..3ea2f5d12 100644
+index 6a77ea6434ff..3ea2f5d123fe 100644
 --- a/arch/x86/um/vdso/Makefile
 +++ b/arch/x86/um/vdso/Makefile
 @@ -60,3 +60,4 @@ quiet_cmd_vdso = VDSO    $@
@@ -100,7 +100,7 @@ index 6a77ea643..3ea2f5d12 100644
  VDSO_LDFLAGS = -fPIC -shared -Wl,--hash-style=sysv -z noexecstack
 +LLVM_COV_PROFILE := n
 diff --git a/drivers/firmware/efi/libstub/Makefile b/drivers/firmware/efi/libstub/Makefile
-index ed4e8ddbe..b8224ff29 100644
+index ed4e8ddbe76a..b8224ff291d9 100644
 --- a/drivers/firmware/efi/libstub/Makefile
 +++ b/drivers/firmware/efi/libstub/Makefile
 @@ -62,6 +62,8 @@ KBUILD_CFLAGS := $(filter-out $(CC_FLAGS_LTO), $(KBUILD_CFLAGS))
@@ -113,7 +113,7 @@ index ed4e8ddbe..b8224ff29 100644
  				   file.o mem.o random.o randomalloc.o pci.o \
  				   skip_spaces.o lib-cmdline.o lib-ctype.o \
 diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 057cd975d..0293acc50 100644
+index 057cd975d014..0293acc50afa 100644
 --- a/kernel/trace/Makefile
 +++ b/kernel/trace/Makefile
 @@ -30,6 +30,7 @@ endif
@@ -125,7 +125,7 @@ index 057cd975d..0293acc50 100644
  # Functions in this file could be invoked from early interrupt
  # code and produce random code coverage.
 diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
-index 1fa98b5e9..4fc791fff 100644
+index 1fa98b5e952b..4fc791fff26c 100644
 --- a/scripts/Makefile.modfinal
 +++ b/scripts/Makefile.modfinal
 @@ -22,6 +22,7 @@ __modfinal: $(modules:%.o=%.ko)
@@ -137,5 +137,5 @@ index 1fa98b5e9..4fc791fff 100644
  
  quiet_cmd_cc_o_c = CC [M]  $@
 -- 
-2.34.1
+2.45.2
 
