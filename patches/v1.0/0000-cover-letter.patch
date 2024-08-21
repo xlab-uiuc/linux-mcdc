@@ -160,7 +160,7 @@ Wentao Zhang (3):
  drivers/firmware/efi/libstub/Makefile |   2 +
  include/asm-generic/vmlinux.lds.h     |  38 ++++
  kernel/Makefile                       |   1 +
- kernel/llvm-cov/Kconfig               |  51 ++++++
+ kernel/llvm-cov/Kconfig               |  50 +++++
  kernel/llvm-cov/Makefile              |   5 +
  kernel/llvm-cov/fs.c                  | 253 ++++++++++++++++++++++++++
  kernel/llvm-cov/llvm-cov.h            | 156 ++++++++++++++++
@@ -168,7 +168,7 @@ Wentao Zhang (3):
  scripts/Makefile.lib                  |  21 +++
  scripts/Makefile.modfinal             |   1 +
  scripts/mod/modpost.c                 |   2 +
- 22 files changed, 551 insertions(+)
+ 22 files changed, 550 insertions(+)
  create mode 100644 kernel/llvm-cov/Kconfig
  create mode 100644 kernel/llvm-cov/Makefile
  create mode 100644 kernel/llvm-cov/fs.c

@@ -61,10 +61,10 @@ index 1750a2b7dfe8..4aa263e5f67f 100644
  ifdef CONFIG_CC_IS_GCC
  CFLAGS_GCOV	+= -fno-tree-loop-im
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
-index b28090ba926b..d388a4adc6bc 100644
+index 505eba5bd23c..e20fd887eaab 100644
 --- a/kernel/llvm-cov/Kconfig
 +++ b/kernel/llvm-cov/Kconfig
-@@ -26,5 +26,26 @@ config LLVM_COV_KERNEL
+@@ -26,4 +26,25 @@ config LLVM_COV_KERNEL
  	  Note that the debugfs filesystem has to be mounted to access the raw
  	  profile.
  
@@ -90,7 +90,6 @@ index b28090ba926b..d388a4adc6bc 100644
 +	  produce warnings and will not be instrumented.
 +
  endmenu
- 
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
 index b9ceaee34b28..b8dfad01cb52 100644
 --- a/scripts/Makefile.lib

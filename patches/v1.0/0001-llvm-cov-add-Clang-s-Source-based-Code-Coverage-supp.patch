@@ -27,13 +27,13 @@ Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
  arch/x86/kernel/vmlinux.lds.S     |   2 +
  include/asm-generic/vmlinux.lds.h |  38 +++++
  kernel/Makefile                   |   1 +
- kernel/llvm-cov/Kconfig           |  30 ++++
+ kernel/llvm-cov/Kconfig           |  29 ++++
  kernel/llvm-cov/Makefile          |   5 +
  kernel/llvm-cov/fs.c              | 253 ++++++++++++++++++++++++++++++
  kernel/llvm-cov/llvm-cov.h        | 156 ++++++++++++++++++
  scripts/Makefile.lib              |  10 ++
  scripts/mod/modpost.c             |   2 +
- 12 files changed, 502 insertions(+)
+ 12 files changed, 501 insertions(+)
  create mode 100644 kernel/llvm-cov/Kconfig
  create mode 100644 kernel/llvm-cov/Makefile
  create mode 100644 kernel/llvm-cov/fs.c
@@ -153,10 +153,10 @@ index 3c13240dfc9f..773e6a9ee00a 100644
  
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
 new file mode 100644
-index 000000000000..b28090ba926b
+index 000000000000..505eba5bd23c
 --- /dev/null
 +++ b/kernel/llvm-cov/Kconfig
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,29 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +menu "Clang's source-based kernel coverage measurement (EXPERIMENTAL)"
 +
@@ -186,7 +186,6 @@ index 000000000000..b28090ba926b
 +	  profile.
 +
 +endmenu
-+
 diff --git a/kernel/llvm-cov/Makefile b/kernel/llvm-cov/Makefile
 new file mode 100644
 index 000000000000..a0f45e05f8fb
