@@ -4,9 +4,9 @@ Date: Wed, 14 Aug 2024 15:42:58 -0500
 Subject: [RFC PATCH 1/3] llvm-cov: add Clang's Source-based Code Coverage
  support
 
-This patch implements the debugfs entries for serializing profiles and
-resetting counters/bitmaps and adds Source-based Code Coverage flags and
-kconfig options.
+Implement debugfs entries for serializing profiles and resetting
+counters/bitmaps. Also adds Source-based Code Coverage flags and kconfig
+options.
 
 This work reuses a portion of code from a previous effort by Sami
 Tolvanen et al. [1], specifically its debugfs interface and the

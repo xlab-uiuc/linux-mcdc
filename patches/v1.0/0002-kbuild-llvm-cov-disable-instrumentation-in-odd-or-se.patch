@@ -4,7 +4,8 @@ Date: Wed, 14 Aug 2024 15:43:44 -0500
 Subject: [RFC PATCH 2/3] kbuild, llvm-cov: disable instrumentation in odd or
  sensitive code
 
-Skip the same set of files that were not instrumented by gcov either.
+Disable instrumentation in the same areas that were disabled for
+kernel/gcov/
 
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
 Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
