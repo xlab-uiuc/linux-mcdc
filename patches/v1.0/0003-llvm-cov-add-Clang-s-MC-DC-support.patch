@@ -6,7 +6,7 @@ Subject: [RFC PATCH 3/3] llvm-cov: add Clang's MC/DC support
 Add Clang flags and kconfig options for measuring the kernel's modified
 condition/decision coverage (MC/DC).
 
-With Clang >= 19, users can determine the max number of conditions in a
+As of Clang 19, users can determine the max number of conditions in a
 decision to measure via option LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS,
 which controls -fmcdc-max-conditions flag of Clang cc1 [1]. Since MC/DC
 implementation utilizes bitmaps to track the execution of test vectors,
@@ -18,18 +18,33 @@ otherwise the kernel image size limit will be exceeded. The largest
 decisions in kernel are contributed for example by macros checking
 CPUID.
 
+Code exceeding LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS will produce compiler
+warnings.
+
+As of LLVM 19, certain expressions are still not covered, and will produce
+build warnings when they are encountered:
+
+"[...] if a boolean expression is embedded in the nest of another boolean
+ expression but separated by a non-logical operator, this is also not
+ supported. For example, in x = (a && b && c && func(d && f)), the d && f
+ case starts a new boolean expression that is separated from the other
+ conditions by the operator func(). When this is encountered, a warning
+ will be generated and the boolean expression will not be
+ instrumented." [2]
+
 [1] https://discourse.llvm.org/t/rfc-coverage-new-algorithm-and-file-format-for-mc-dc/76798
+[2] https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#mc-dc-instrumentation
 
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
 Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
 ---
  Makefile                |  6 ++++++
- kernel/llvm-cov/Kconfig | 21 +++++++++++++++++++++
+ kernel/llvm-cov/Kconfig | 36 ++++++++++++++++++++++++++++++++++++
  scripts/Makefile.lib    | 11 +++++++++++
- 3 files changed, 38 insertions(+)
+ 3 files changed, 53 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 1750a2b7d..4aa263e5f 100644
+index 1750a2b7dfe8..4aa263e5f67f 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -740,6 +740,12 @@ all: vmlinux
@@ -46,10 +61,10 @@ index 1750a2b7d..4aa263e5f 100644
  ifdef CONFIG_CC_IS_GCC
  CFLAGS_GCOV	+= -fno-tree-loop-im
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
-index b28090ba9..d388a4adc 100644
+index 505eba5bd23c..40b6a4fd590e 100644
 --- a/kernel/llvm-cov/Kconfig
 +++ b/kernel/llvm-cov/Kconfig
-@@ -26,5 +26,26 @@ config LLVM_COV_KERNEL
+@@ -26,4 +26,40 @@ config LLVM_COV_KERNEL
  	  Note that the debugfs filesystem has to be mounted to access the raw
  	  profile.
  
@@ -58,10 +73,25 @@ index b28090ba9..d388a4adc 100644
 +	depends on LLVM_COV_KERNEL
 +	depends on CLANG_VERSION >= 180000
 +	help
-+	  This option enables measuring kernel's modified condition/decision
-+	  coverage (MC/DC) with Clang's Source-based Code Coverage.
++	  This option enables modified condition/decision coverage (MC/DC)
++	  code coverage instrumentation.
 +
 +	  If unsure, say N.
++
++	  This will add Clang's Source-based Code Coverage MC/DC
++	  instrumentation to your kernel. As of LLVM 19, certain expressions
++	  are still not covered, and will produce build warnings when they are
++	  encountered.
++
++	  "[...] if a boolean expression is embedded in the nest of another
++	   boolean expression but separated by a non-logical operator, this is
++	   also not supported. For example, in
++	   x = (a && b && c && func(d && f)), the d && f case starts a new
++	   boolean expression that is separated from the other conditions by the
++	   operator func(). When this is encountered, a warning will be
++	   generated and the boolean expression will not be instrumented."
++
++	   https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#mc-dc-instrumentation
 +
 +config LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS
 +	int "Maximum number of conditions in a decision to instrument"
@@ -75,9 +105,8 @@ index b28090ba9..d388a4adc 100644
 +	  produce warnings and will not be instrumented.
 +
  endmenu
- 
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index b9ceaee34..b8dfad01c 100644
+index b9ceaee34b28..b8dfad01cb52 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
 @@ -168,6 +168,17 @@ _c_flags += $(if $(patsubst n%,, \
@@ -99,5 +128,5 @@ index b9ceaee34..b8dfad01c 100644
  # Enable address sanitizer flags for kernel except some files or directories
  # we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
 -- 
-2.34.1
+2.45.2
 
