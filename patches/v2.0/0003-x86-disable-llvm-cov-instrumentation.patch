@@ -1,0 +1,42 @@
+From babe978514c2c66d3380777ea371615ed7898393 Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <wentaoz5@illinois.edu>
+Date: Mon, 26 Aug 2024 16:14:32 -0500
+Subject: [PATCH v2 3/5] x86: disable llvm-cov instrumentation
+
+Disable instrumentation in the same areas that were disabled for
+kernel/gcov/
+
+Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
+Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+---
+ arch/x86/crypto/Makefile       | 3 ++-
+ arch/x86/platform/efi/Makefile | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+index 53b4a2778..57f3d4921 100644
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -119,5 +119,6 @@ quiet_cmd_perlasm = PERLASM $@
+ $(obj)/%.S: $(src)/%.pl FORCE
+ 	$(call if_changed,perlasm)
+ 
+-# Disable GCOV in odd or sensitive code
++# Disable GCOV and llvm-cov in odd or sensitive code
+ GCOV_PROFILE_curve25519-x86_64.o := n
++LLVM_COV_PROFILE_curve25519-x86_64.o := n
+diff --git a/arch/x86/platform/efi/Makefile b/arch/x86/platform/efi/Makefile
+index 500cab4a7..a07852e8f 100644
+--- a/arch/x86/platform/efi/Makefile
++++ b/arch/x86/platform/efi/Makefile
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
+ KASAN_SANITIZE := n
+ GCOV_PROFILE := n
++LLVM_COV_PROFILE := n
+ 
+ obj-$(CONFIG_EFI) 		+= memmap.o quirks.o efi.o efi_$(BITS).o \
+ 				   efi_stub_$(BITS).o
+-- 
+2.45.2
+
