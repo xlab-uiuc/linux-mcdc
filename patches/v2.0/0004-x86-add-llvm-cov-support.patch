@@ -6,8 +6,9 @@ Subject: [PATCH v2 4/5] x86: add llvm-cov support
 Set ARCH_HAS_* options to "y" in kconfig and include section description in
 linker script.
 
-Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
+Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
 ---
  arch/x86/Kconfig              | 2 ++
  arch/x86/kernel/vmlinux.lds.S | 2 ++

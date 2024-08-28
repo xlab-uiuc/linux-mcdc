@@ -35,8 +35,9 @@ build warnings when they are encountered:
 [1] https://discourse.llvm.org/t/rfc-coverage-new-algorithm-and-file-format-for-mc-dc/76798
 [2] https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#mc-dc-instrumentation
 
-Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
+Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
 ---
  Makefile                |  6 ++++++
  kernel/llvm-cov/Kconfig | 36 ++++++++++++++++++++++++++++++++++++

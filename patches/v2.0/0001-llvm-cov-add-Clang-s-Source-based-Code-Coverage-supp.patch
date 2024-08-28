@@ -18,8 +18,9 @@ value profiling.
 
 [1] https://lore.kernel.org/lkml/20210407211704.367039-1-morbo@google.com/
 
-Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
+Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
 ---
  Makefile                          |   3 +
  arch/Kconfig                      |   1 +

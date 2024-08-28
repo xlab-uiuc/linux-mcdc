@@ -6,8 +6,9 @@ Subject: [PATCH v2 2/5] modfinal: disable llvm-cov instrumentation
 Disable instrumentation in the same areas that were disabled for
 kernel/gcov/
 
-Signed-off-by: Chuck Wolber <chuck.wolber@boeing.com>
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
+Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
 ---
  scripts/Makefile.modfinal | 1 +
  1 file changed, 1 insertion(+)
