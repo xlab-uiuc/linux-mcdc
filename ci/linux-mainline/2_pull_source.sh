@@ -17,11 +17,11 @@ kernel_latest_tag=v$(
 )
 echo $kernel_latest_tag
 current_base=v$(
-    cat $MCDC_HOME/linux-mcdc/patches/v2.0/README.md | rev | cut -d ' ' -f 1 | cut -d . -f 2- | rev
+    cat $MCDC_HOME/linux-mcdc/patches/latest/README.md | rev | cut -d ' ' -f 1 | cut -d . -f 2- | rev
 )
 echo $current_base
 if [[ "$kernel_latest_tag" != "$current_base" ]]; then
-    echo "There are updates in upstream. Patch v2.0 needs to be rebased."
+    echo "There are updates in upstream. "patches/latest/" likely needs to be rebased."
     # Fail on purpose as likely we have to resolve some conflicts
     exit 1
 fi
@@ -38,8 +38,8 @@ git checkout $llvm_ref
 
 # Apply kernel patches
 cd $MCDC_HOME/linux
-git apply $MCDC_HOME/linux-mcdc/patches/v2.0/0001-llvm-cov-add-Clang-s-Source-based-Code-Coverage-supp.patch
-git apply $MCDC_HOME/linux-mcdc/patches/v2.0/0002-modfinal-disable-llvm-cov-instrumentation.patch
-git apply $MCDC_HOME/linux-mcdc/patches/v2.0/0003-x86-disable-llvm-cov-instrumentation.patch
-git apply $MCDC_HOME/linux-mcdc/patches/v2.0/0004-x86-add-llvm-cov-support.patch
-git apply $MCDC_HOME/linux-mcdc/patches/v2.0/0005-llvm-cov-add-Clang-s-MC-DC-support.patch
+git apply $MCDC_HOME/linux-mcdc/patches/latest/0001-llvm-cov-add-Clang-s-Source-based-Code-Coverage-supp.patch
+git apply $MCDC_HOME/linux-mcdc/patches/latest/0002-modfinal-disable-llvm-cov-instrumentation.patch
+git apply $MCDC_HOME/linux-mcdc/patches/latest/0003-x86-disable-llvm-cov-instrumentation.patch
+git apply $MCDC_HOME/linux-mcdc/patches/latest/0004-x86-add-llvm-cov-support.patch
+git apply $MCDC_HOME/linux-mcdc/patches/latest/0005-llvm-cov-add-Clang-s-MC-DC-support.patch

@@ -8,7 +8,7 @@ on:
     paths:
     - '.github/workflows/llvm-trunk-linux-mainline.yml'
     - 'ci/linux-mainline/**'
-    - 'patches/v2.0/**'
+    - 'patches/latest/**'
     - 'scripts/**'
   workflow_dispatch:
   schedule:
