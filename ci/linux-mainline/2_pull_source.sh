@@ -38,8 +38,8 @@ git checkout $llvm_ref
 
 # Apply kernel patches
 cd $MCDC_HOME/linux
+git apply $MCDC_HOME/linux-mcdc/patches/latest/0000-cover-letter.patch
 git apply $MCDC_HOME/linux-mcdc/patches/latest/0001-llvm-cov-add-Clang-s-Source-based-Code-Coverage-supp.patch
-git apply $MCDC_HOME/linux-mcdc/patches/latest/0002-modfinal-disable-llvm-cov-instrumentation.patch
+git apply $MCDC_HOME/linux-mcdc/patches/latest/0002-llvm-cov-add-Clang-s-MC-DC-support.patch
 git apply $MCDC_HOME/linux-mcdc/patches/latest/0003-x86-disable-llvm-cov-instrumentation.patch
-git apply $MCDC_HOME/linux-mcdc/patches/latest/0004-x86-add-llvm-cov-support.patch
-git apply $MCDC_HOME/linux-mcdc/patches/latest/0005-llvm-cov-add-Clang-s-MC-DC-support.patch
+git apply $MCDC_HOME/linux-mcdc/patches/latest/0004-x86-enable-llvm-cov-support.patch
