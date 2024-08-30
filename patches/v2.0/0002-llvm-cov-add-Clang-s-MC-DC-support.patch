@@ -1,22 +1,54 @@
-From b635764583cfd431dc7dc8774ece6c58761c2a38 Mon Sep 17 00:00:00 2001
+From 7f549a7e181f5ec12319836432a597855ef0baaa Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
-Date: Sun, 25 Aug 2024 17:35:53 -0500
-Subject: [PATCH v2 5/5] llvm-cov: add Clang's MC/DC support
+Date: Fri, 30 Aug 2024 14:49:24 -0500
+Subject: [RFC PATCH 2/4] llvm-cov: add Clang's MC/DC support
 
-Add Clang flags and kconfig options for measuring the kernel's modified
-condition/decision coverage (MC/DC).
+Add infrastructure to enable Clang's Modified Condition/Decision Coverage
+(MC/DC) [1].
+
+Clang has added MC/DC support as of its 18.1.0 release. MC/DC is a fine-
+grained coverage metric required by many automotive and aviation industrial
+standards for certifying mission-critical software [2].
+
+In the following example from arch/x86/events/probe.c, llvm-cov gives the
+MC/DC measurement for the compound logic decision at line 43.
+
+   43|     12|			if (msr[bit].test && !msr[bit].test(bit, data))
+  ------------------
+  |---> MC/DC Decision Region (43:8) to (43:50)
+  |
+  |  Number of Conditions: 2
+  |     Condition C1 --> (43:8)
+  |     Condition C2 --> (43:25)
+  |
+  |  Executed MC/DC Test Vectors:
+  |
+  |     C1, C2    Result
+  |  1 { T,  F  = F      }
+  |  2 { T,  T  = T      }
+  |
+  |  C1-Pair: not covered
+  |  C2-Pair: covered: (1,2)
+  |  MC/DC Coverage for Decision: 50.00%
+  |
+  ------------------
+   44|      5|				continue;
+
+As the results suggest, during the span of measurement, only condition C2
+(!msr[bit].test(bit, data)) is covered. That means C2 was evaluated to both
+true and false, and in those test vectors C2 affected the decision outcome
+independently. Therefore MC/DC for this decision is 1 out of 2 (50.00%).
 
 As of Clang 19, users can determine the max number of conditions in a
-decision to measure via option LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS,
-which controls -fmcdc-max-conditions flag of Clang cc1 [1]. Since MC/DC
+decision to measure via option LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS, which
+controls -fmcdc-max-conditions flag of Clang cc1 [3]. Since MC/DC
 implementation utilizes bitmaps to track the execution of test vectors,
 more memory is consumed if larger decisions are getting counted. The
-maximum value supported by Clang is 32767. According to local
-experiments, the working maximum for Linux kernel is 44, with the
-largest decisions in kernel codebase (with 45 conditions) excluded,
-otherwise the kernel image size limit will be exceeded. The largest
-decisions in kernel are contributed for example by macros checking
-CPUID.
+maximum value supported by Clang is 32767. According to local experiments,
+the working maximum for Linux kernel is 44, with the largest decisions in
+kernel codebase (with 45 conditions) excluded, otherwise the kernel image
+size limit will be exceeded. The largest decisions in kernel are
+contributed for example by macros checking CPUID.
 
 Code exceeding LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS will produce compiler
 warnings.
@@ -30,11 +62,12 @@ build warnings when they are encountered:
  case starts a new boolean expression that is separated from the other
  conditions by the operator func(). When this is encountered, a warning
  will be generated and the boolean expression will not be
- instrumented." [2]
+ instrumented." [4]
 
-[1] https://discourse.llvm.org/t/rfc-coverage-new-algorithm-and-file-format-for-mc-dc/76798
-[2] https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#mc-dc-instrumentation
-
+Link: https://en.wikipedia.org/wiki/Modified_condition%2Fdecision_coverage [1]
+Link: https://digital-library.theiet.org/content/journals/10.1049/sej.1994.0025 [2]
+Link: https://discourse.llvm.org/t/rfc-coverage-new-algorithm-and-file-format-for-mc-dc/76798 [3]
+Link: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#mc-dc-instrumentation [4]
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
 Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
 Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
@@ -62,12 +95,12 @@ index 19faf5a31..516756983 100644
  ifdef CONFIG_CC_IS_GCC
  CFLAGS_GCOV	+= -fno-tree-loop-im
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
-index 391b91f7c..4b82d4e73 100644
+index 9241fdfb0..66259e1f2 100644
 --- a/kernel/llvm-cov/Kconfig
 +++ b/kernel/llvm-cov/Kconfig
-@@ -44,4 +44,40 @@ config LLVM_COV_PROFILE_ALL
- 	  larger and run slower. Also be sure to exclude files from profiling
- 	  which are not linked to the kernel image to prevent linker errors.
+@@ -61,4 +61,40 @@ config LLVM_COV_PROFILE_ALL
+ 	  Note that a kernel compiled with profiling flags will be significantly
+ 	  larger and run slower.
  
 +config LLVM_COV_KERNEL_MCDC
 +	bool "Enable measuring modified condition/decision coverage (MC/DC)"

@@ -1,7 +1,7 @@
-From b635764583cfd431dc7dc8774ece6c58761c2a38 Mon Sep 17 00:00:00 2001
+From 2e9815d91ea4dcdc619254286bdcba63760dd8ad Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
-Date: Mon, 26 Aug 2024 17:01:37 -0500
-Subject: [PATCH v2 0/5] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
+Date: Fri, 30 Aug 2024 15:52:14 -0500
+Subject: [RFC PATCH 0/4] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
 
 This series adds support for building x86-64 kernels with Clang's Source-
 based Code Coverage[1] in order to facilitate Modified Condition/Decision
@@ -90,10 +90,16 @@ indexed, and used for generating coverage reports in various formats.
              --format=text --use-color=false -output-dir=coverage_reports \
              -instr-profile vmlinux.profdata vmlinux
 
-The first patch in this series enables Clang's Source-based Code Coverage
-in the kernel. The second patch disables instrumentation in the same areas
-that were disabled for kernel/gcov/. The third patch adds kernel
-configuration directives to enable MC/DC instrumentation.
+The first two patches enable the llvm-cov infrastructure, where the first enables
+source based code coverage and the second adds MC/DC support. The next two
+patches disable instrumentation in the same areas disabled for kernel/gcov. The
+final patch enables coverage for x86-64.
+
+The choice to use LLVM_COV_PROFILE, instead of reusing GCOV_PROFILE, was
+deliberate. More work needs to be done to determine if it is appropriate to reuse
+the same flag. In addition, given the fundamentally different approaches to
+instrumentation and the resulting variation in coverage reports, there is a strong
+likelihood that coverage type will need to be managed separately.
 
 This work reuses code from a previous effort by Sami Tolvanen et al. [4].
 Our aim is for source-based *code coverage* required for high assurance
@@ -109,8 +115,7 @@ able to measure MC/DC without modifying CFLAGS_GCOV and it would face the
 same issues in terms of source correlation as gcov in general does.
 
 Some demo and results can be found in [5]. We will talk about this patch
-series in the Refereed Track at LPC 2024 [6] and would appreciate the
-community's feedback.
+series in the Refereed Track at LPC 2024 [6].
 
 Known Limitations:
 
@@ -159,14 +164,15 @@ v1 -> v2:
   it with LLVM_COV_PROFILE_ALL, if they are sure of the performance impact
 * x86, kbuild: remove "LLVM_COV_PROFILE = :n" instances that have been
   taken care of by $is-kernel-object
+* In v1 we had LLVM_COV_PROFILE = n for the following places
+
 ---
 
-Wentao Zhang (5):
+Wentao Zhang (4):
   llvm-cov: add Clang's Source-based Code Coverage support
-  modfinal: disable llvm-cov instrumentation
-  x86: disable llvm-cov instrumentation
-  x86: add llvm-cov support
   llvm-cov: add Clang's MC/DC support
+  x86: disable llvm-cov instrumentation
+  x86: enable llvm-cov support
 
  Makefile                          |   9 ++
  arch/Kconfig                      |   1 +
@@ -176,14 +182,13 @@ Wentao Zhang (5):
  arch/x86/platform/efi/Makefile    |   1 +
  include/asm-generic/vmlinux.lds.h |  36 +++++
  kernel/Makefile                   |   1 +
- kernel/llvm-cov/Kconfig           |  83 ++++++++++
+ kernel/llvm-cov/Kconfig           | 100 ++++++++++++
  kernel/llvm-cov/Makefile          |   5 +
  kernel/llvm-cov/fs.c              | 253 ++++++++++++++++++++++++++++++
  kernel/llvm-cov/llvm-cov.h        | 156 ++++++++++++++++++
  scripts/Makefile.lib              |  23 +++
- scripts/Makefile.modfinal         |   1 +
  scripts/mod/modpost.c             |   2 +
- 15 files changed, 577 insertions(+), 1 deletion(-)
+ 14 files changed, 593 insertions(+), 1 deletion(-)
  create mode 100644 kernel/llvm-cov/Kconfig
  create mode 100644 kernel/llvm-cov/Makefile
  create mode 100644 kernel/llvm-cov/fs.c

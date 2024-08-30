@@ -1,23 +1,58 @@
-From 3b71080443fee47743b1a43476a5815772b638a8 Mon Sep 17 00:00:00 2001
+From df14c0c2fcefce1f2d9dd85d57b85a027de25f2a Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
-Date: Sun, 25 Aug 2024 17:56:02 -0500
-Subject: [PATCH v2 1/5] llvm-cov: add Clang's Source-based Code Coverage
+Date: Fri, 30 Aug 2024 14:48:03 -0500
+Subject: [RFC PATCH 1/4] llvm-cov: add Clang's Source-based Code Coverage
  support
 
-Implement debugfs entries for serializing profiles and resetting
-counters/bitmaps. Also adds Source-based Code Coverage flags and kconfig
-options.
+Add infrastructure to support Clang's source-based code coverage [1]. This
+includes debugfs entries for serializing profiles and resetting
+counters/bitmaps.  Also adds coverage flags and kconfig options.
 
-This work reuses a portion of code from a previous effort by Sami
-Tolvanen et al. [1], specifically its debugfs interface and the
-underlying profile processing, but discards all its PGO-specific parts,
-notably value profiling.  To our end (code coverage, like MC/DC,
-required for high assurance), we do instrumentation at the compiler
-frontend, instead of IR; we care about counters and bitmaps, but not
-value profiling.
+The newly added kernel/llvm-cov/ directory complements the existing gcov
+implementation. Gcov works at the object code level which may better
+reflect actual execution. However, Gcov lacks the necessary information to
+correlate coverage measurement with source code location when compiler
+optimization level is non-zero (which is the default when building the
+kernel). In addition, gcov reports are occasionally ambiguous when
+attempting to compare with source code level developer intent.
 
-[1] https://lore.kernel.org/lkml/20210407211704.367039-1-morbo@google.com/
+In the following gcov example from drivers/firmware/dmi_scan.c, an
+expression with four conditions is reported to have six branch outcomes,
+which is not ideally informative in many safety related use cases, such as
+automotive, medical, and aerospace.
 
+        5: 1068:	if (s == e || *e != '/' || !month || month > 12) {
+branch  0 taken 5 (fallthrough)
+branch  1 taken 0
+branch  2 taken 5 (fallthrough)
+branch  3 taken 0
+branch  4 taken 0 (fallthrough)
+branch  5 taken 5
+
+On the other hand, Clang's Source-based Code Coverage instruments at the
+compiler frontend which maintains an accurate mapping from coverage
+measurement to source code location. Coverage reports reflect exactly how
+the code is written regardless of optimization and can present advanced
+metrics like branch coverage and MC/DC in a clearer way. Coverage report
+for the same snippet by llvm-cov would look as follows:
+
+ 1068|      5|	if (s == e || *e != '/' || !month || month > 12) {
+  ------------------
+  |  Branch (1068:6): [True: 0, False: 5]
+  |  Branch (1068:16): [True: 0, False: 5]
+  |  Branch (1068:29): [True: 0, False: 5]
+  |  Branch (1068:39): [True: 0, False: 5]
+  ------------------
+
+This work reuses a portion of code from a previous effort by Sami Tolvanen
+et al. [2], specifically its debugfs interface and the underlying profile
+processing, but discards all its PGO-specific parts, notably value
+profiling.  To our end (code coverage required for high assurance), we
+require instrumentation at the compiler front end, instead of IR; we care
+about counters and bitmaps, but not value profiling.
+
+Link: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html [1]
+Link: https://lore.kernel.org/lkml/20210407211704.367039-1-morbo@google.com/ [2]
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
 Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
 Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
@@ -26,13 +61,13 @@ Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
  arch/Kconfig                      |   1 +
  include/asm-generic/vmlinux.lds.h |  36 +++++
  kernel/Makefile                   |   1 +
- kernel/llvm-cov/Kconfig           |  47 ++++++
+ kernel/llvm-cov/Kconfig           |  64 ++++++++
  kernel/llvm-cov/Makefile          |   5 +
  kernel/llvm-cov/fs.c              | 253 ++++++++++++++++++++++++++++++
  kernel/llvm-cov/llvm-cov.h        | 156 ++++++++++++++++++
  scripts/Makefile.lib              |  11 ++
  scripts/mod/modpost.c             |   2 +
- 10 files changed, 515 insertions(+)
+ 10 files changed, 532 insertions(+)
  create mode 100644 kernel/llvm-cov/Kconfig
  create mode 100644 kernel/llvm-cov/Makefile
  create mode 100644 kernel/llvm-cov/fs.c
@@ -125,10 +160,10 @@ index 3c13240df..773e6a9ee 100644
  
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
 new file mode 100644
-index 000000000..391b91f7c
+index 000000000..9241fdfb0
 --- /dev/null
 +++ b/kernel/llvm-cov/Kconfig
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,64 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +menu "Clang's source-based kernel coverage measurement (EXPERIMENTAL)"
 +
@@ -154,6 +189,24 @@ index 000000000..391b91f7c
 +	  This file can then be converted into the indexed format with
 +	  llvm-profdata and used to generate coverage reports with llvm-cov.
 +
++	  Additionally specify CONFIG_LLVM_COV_PROFILE_ALL=y to get profiling
++	  data for the entire kernel. To enable profiling for specific files or
++	  directories, add a line similar to the following to the respective
++	  Makefile:
++
++	  For a single file (e.g. main.o):
++	          LLVM_COV_PROFILE_main.o := y
++
++	  For all files in one directory:
++	          LLVM_COV_PROFILE := y
++
++	  To exclude files from being profiled even when
++	  CONFIG_LLVM_COV_PROFILE_ALL is specified, use:
++
++	          LLVM_COV_PROFILE_main.o := n
++	  and:
++	          LLVM_COV_PROFILE := n
++
 +	  Note that a kernel compiled with coverage flags will be significantly
 +	  larger and run slower.
 +
@@ -172,8 +225,7 @@ index 000000000..391b91f7c
 +	  If unsure, say N.
 +
 +	  Note that a kernel compiled with profiling flags will be significantly
-+	  larger and run slower. Also be sure to exclude files from profiling
-+	  which are not linked to the kernel image to prevent linker errors.
++	  larger and run slower.
 +
 +endmenu
 diff --git a/kernel/llvm-cov/Makefile b/kernel/llvm-cov/Makefile
