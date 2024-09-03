@@ -1,1 +1,1 @@
-These patches were tested on Linux Kernel 6.11-rc5.
+These patches were tested on Linux Kernel 6.11-rc6.

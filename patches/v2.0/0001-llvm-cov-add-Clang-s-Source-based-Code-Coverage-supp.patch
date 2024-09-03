@@ -1,4 +1,4 @@
-From df14c0c2fcefce1f2d9dd85d57b85a027de25f2a Mon Sep 17 00:00:00 2001
+From 7ec4249940342f27d652a676e5f03ac022f446fd Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:48:03 -0500
 Subject: [RFC PATCH 1/4] llvm-cov: add Clang's Source-based Code Coverage
@@ -74,7 +74,7 @@ Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
  create mode 100644 kernel/llvm-cov/llvm-cov.h
 
 diff --git a/Makefile b/Makefile
-index 7b60eb103..19faf5a31 100644
+index d57cfc689..51498134c 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -737,6 +737,9 @@ endif # KBUILD_EXTMOD

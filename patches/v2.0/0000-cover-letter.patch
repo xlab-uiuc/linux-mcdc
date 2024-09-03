@@ -1,6 +1,6 @@
-From 2e9815d91ea4dcdc619254286bdcba63760dd8ad Mon Sep 17 00:00:00 2001
-From: Wentao Zhang <wentaoz5@illinois.edu>
-Date: Fri, 30 Aug 2024 15:52:14 -0500
+From 405f84ba842bab63103f09c459c651b4f2a7e5df Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <zhangwt1997@gmail.com>
+Date: Tue, 3 Sep 2024 13:41:12 -0500
 Subject: [RFC PATCH 0/4] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
 
 This series adds support for building x86-64 kernels with Clang's Source-
