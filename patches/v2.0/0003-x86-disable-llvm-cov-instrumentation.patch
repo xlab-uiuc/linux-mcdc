@@ -1,19 +1,21 @@
-From 16f189100878d7461fc844cf1814654db11b6f82 Mon Sep 17 00:00:00 2001
+From f4cc26b9d49b7c34671c04a8b62485a311530298 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:48:53 -0500
 Subject: [RFC PATCH 3/4] x86: disable llvm-cov instrumentation
 
-Disable instrumentation in the x86-64 relevant areas that were disabled for
-kernel/gcov/. Similar changes will be required for other architectures
-if/when Clang's source based code coverage support is enabled.
+Disable instrumentation for arch/x86/crypto/curve25519-x86_64.c. Otherwise
+compilation would fail with "error: inline assembly requires more registers
+than available".
+
+Similar behavior was reported with gcov as well. See c390c452ebeb ("crypto:
+x86/curve25519 - disable gcov").
 
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
 Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
 Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
 ---
- arch/x86/crypto/Makefile       | 3 ++-
- arch/x86/platform/efi/Makefile | 1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ arch/x86/crypto/Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
 index 53b4a2778..57f3d4921 100644
@@ -27,18 +29,6 @@ index 53b4a2778..57f3d4921 100644
 +# Disable GCOV and llvm-cov in odd or sensitive code
  GCOV_PROFILE_curve25519-x86_64.o := n
 +LLVM_COV_PROFILE_curve25519-x86_64.o := n
-diff --git a/arch/x86/platform/efi/Makefile b/arch/x86/platform/efi/Makefile
-index 500cab4a7..a07852e8f 100644
---- a/arch/x86/platform/efi/Makefile
-+++ b/arch/x86/platform/efi/Makefile
-@@ -1,6 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
- KASAN_SANITIZE := n
- GCOV_PROFILE := n
-+LLVM_COV_PROFILE := n
- 
- obj-$(CONFIG_EFI) 		+= memmap.o quirks.o efi.o efi_$(BITS).o \
- 				   efi_stub_$(BITS).o
 -- 
 2.45.2
 

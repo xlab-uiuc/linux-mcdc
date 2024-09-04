@@ -1,4 +1,4 @@
-From 405f84ba842bab63103f09c459c651b4f2a7e5df Mon Sep 17 00:00:00 2001
+From 7c60851daae39815fa696fc2265e838b1913f7ac Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:49:06 -0500
 Subject: [RFC PATCH 4/4] x86: enable llvm-cov support

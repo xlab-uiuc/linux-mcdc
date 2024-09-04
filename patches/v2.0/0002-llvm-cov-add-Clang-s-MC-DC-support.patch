@@ -1,4 +1,4 @@
-From d108150de2bd2bc613139579c5fa98387c2c9ae6 Mon Sep 17 00:00:00 2001
+From e7d38a2115b9c1041dcda404f102888c9894da10 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:49:24 -0500
 Subject: [RFC PATCH 2/4] llvm-cov: add Clang's MC/DC support
@@ -45,10 +45,10 @@ controls -fmcdc-max-conditions flag of Clang cc1 [3]. Since MC/DC
 implementation utilizes bitmaps to track the execution of test vectors,
 more memory is consumed if larger decisions are getting counted. The
 maximum value supported by Clang is 32767. According to local experiments,
-the working maximum for Linux kernel is 44, with the largest decisions in
-kernel codebase (with 45 conditions) excluded, otherwise the kernel image
-size limit will be exceeded. The largest decisions in kernel are
-contributed for example by macros checking CPUID.
+the working maximum for Linux kernel is 46, with the largest decisions in
+kernel codebase (with 47 conditions, as of v6.11) excluded, otherwise the
+kernel image size limit will be exceeded. The largest decisions in kernel
+are contributed for example by macros checking CPUID.
 
 Code exceeding LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS will produce compiler
 warnings.
