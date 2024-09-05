@@ -6,9 +6,9 @@ on:
     - llvm-trunk
     - llvm-trunk-next
     paths:
-    - '.github/workflows/**'
-    - 'ci/**'
-    - 'patches/**'
+    - '.github/workflows/llvm-trunk-linux-v5.15.153.yml'
+    - 'ci/linux-v5.15.153/**'
+    - 'patches/v0.6/**'
     - 'scripts/**'
   workflow_dispatch:
   schedule:

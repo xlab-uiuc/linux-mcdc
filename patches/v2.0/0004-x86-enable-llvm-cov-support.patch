@@ -1,0 +1,45 @@
+From 7c60851daae39815fa696fc2265e838b1913f7ac Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <wentaoz5@illinois.edu>
+Date: Fri, 30 Aug 2024 14:49:06 -0500
+Subject: [RFC PATCH 4/4] x86: enable llvm-cov support
+
+Set ARCH_HAS_* options to "y" in kconfig and include section description in
+linker script.
+
+Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
+Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
+---
+ arch/x86/Kconfig              | 2 ++
+ arch/x86/kernel/vmlinux.lds.S | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 007bab9f2..e0a8f7b42 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -85,6 +85,8 @@ config X86
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+ 	select ARCH_HAS_KCOV			if X86_64
++	select ARCH_HAS_LLVM_COV		if X86_64
++	select ARCH_HAS_LLVM_COV_PROFILE_ALL	if X86_64
+ 	select ARCH_HAS_KERNEL_FPU_SUPPORT
+ 	select ARCH_HAS_MEM_ENCRYPT
+ 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 6e73403e8..904337722 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -191,6 +191,8 @@ SECTIONS
+ 
+ 	BUG_TABLE
+ 
++	LLVM_COV_DATA
++
+ 	ORC_UNWIND_TABLE
+ 
+ 	. = ALIGN(PAGE_SIZE);
+-- 
+2.45.2
+
