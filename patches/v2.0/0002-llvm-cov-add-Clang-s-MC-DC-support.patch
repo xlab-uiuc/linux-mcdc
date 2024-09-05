@@ -1,7 +1,7 @@
 From e7d38a2115b9c1041dcda404f102888c9894da10 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:49:24 -0500
-Subject: [RFC PATCH 2/4] llvm-cov: add Clang's MC/DC support
+Subject: [PATCH v2 2/4] llvm-cov: add Clang's MC/DC support
 
 Add infrastructure to enable Clang's Modified Condition/Decision Coverage
 (MC/DC) [1].
