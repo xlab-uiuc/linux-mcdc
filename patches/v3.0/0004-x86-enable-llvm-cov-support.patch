@@ -1,4 +1,4 @@
-From f2c7e85b8f5019419de7fdc159b827fc52f10753 Mon Sep 17 00:00:00 2001
+From d005c3b310f93a00709a82b51c897f869c8178c0 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:49:06 -0500
 Subject: [PATCH v3 4/4] x86: enable llvm-cov support

@@ -1,6 +1,6 @@
-From f2c7e85b8f5019419de7fdc159b827fc52f10753 Mon Sep 17 00:00:00 2001
+From d005c3b310f93a00709a82b51c897f869c8178c0 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
-Date: Wed, 11 Sep 2024 17:14:47 -0500
+Date: Mon, 16 Sep 2024 19:16:54 -0500
 Subject: [PATCH v3 0/4] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
 
 This series adds support for building x86-64 kernels with Clang's Source-
@@ -150,7 +150,7 @@ build warnings when they are encountered:
 ---
 v2 -> v3:
 
-* Rebased onto v6.11-rc7 from v6.11-rc6.
+* Rebased onto v6.11 from v6.11-rc7.
 
 ---
 

@@ -1,4 +1,4 @@
-From 488d663c33d298040dc2748d4f6e5dd95fceb009 Mon Sep 17 00:00:00 2001
+From 16c9591109564f353e31769f7775f38dca195496 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:49:24 -0500
 Subject: [PATCH v3 2/4] llvm-cov: add Clang's MC/DC support
@@ -78,7 +78,7 @@ Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
  3 files changed, 54 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 80deed702..729be1741 100644
+index 323af7343..590e96532 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -741,6 +741,12 @@ all: vmlinux

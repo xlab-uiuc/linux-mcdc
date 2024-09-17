@@ -1,4 +1,4 @@
-From 637397dfc8b0d9c051c1a7f849742dbbcecdd9fb Mon Sep 17 00:00:00 2001
+From 39d7bd367979623699d4866ad088445f28647abc Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:48:03 -0500
 Subject: [PATCH v3 1/4] llvm-cov: add Clang's Source-based Code Coverage
@@ -74,7 +74,7 @@ Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
  create mode 100644 kernel/llvm-cov/llvm-cov.h
 
 diff --git a/Makefile b/Makefile
-index 2966d5fbb..80deed702 100644
+index 34bd1d5f9..323af7343 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -738,6 +738,9 @@ endif # KBUILD_EXTMOD

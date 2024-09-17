@@ -1,4 +1,4 @@
-From 55931669b6598c7cdbc5d4f3023ffbd9eb10d55a Mon Sep 17 00:00:00 2001
+From 90bb13a445e95fade37930fd83322f9e2cf3202a Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:48:53 -0500
 Subject: [PATCH v3 3/4] x86: disable llvm-cov instrumentation
