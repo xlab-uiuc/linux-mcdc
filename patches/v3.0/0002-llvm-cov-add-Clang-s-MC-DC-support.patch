@@ -1,4 +1,4 @@
-From bd8e4b2282e4051b6f349c020e7ebff8e262dcab Mon Sep 17 00:00:00 2001
+From 55a288a8fe563a6cc93675ea1fce6bf23bd74b13 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:49:24 -0500
 Subject: [PATCH v3 2/4] llvm-cov: add Clang's MC/DC support
@@ -71,17 +71,18 @@ Link: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#mc-dc-instrumenta
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
 Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
 Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
 ---
  Makefile                |  6 ++++++
- kernel/llvm-cov/Kconfig | 37 +++++++++++++++++++++++++++++++++++++
+ kernel/llvm-cov/Kconfig | 43 +++++++++++++++++++++++++++++++++++++++++
  scripts/Makefile.lib    | 12 ++++++++++++
- 3 files changed, 55 insertions(+)
+ 3 files changed, 61 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 323af7343..590e96532 100644
+index c4fe708e9..0e826eaed 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -741,6 +741,12 @@ all: vmlinux
+@@ -739,6 +739,12 @@ all: vmlinux
  CFLAGS_LLVM_COV := -fprofile-instr-generate -fcoverage-mapping
  export CFLAGS_LLVM_COV
  
@@ -95,10 +96,10 @@ index 323af7343..590e96532 100644
  ifdef CONFIG_CC_IS_GCC
  CFLAGS_GCOV	+= -fno-tree-loop-im
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
-index 9241fdfb0..8482d94f0 100644
+index e0533be92..4f0290753 100644
 --- a/kernel/llvm-cov/Kconfig
 +++ b/kernel/llvm-cov/Kconfig
-@@ -61,4 +61,41 @@ config LLVM_COV_PROFILE_ALL
+@@ -72,4 +72,47 @@ config LLVM_COV_PROFILE_ALL
  	  Note that a kernel compiled with profiling flags will be significantly
  	  larger and run slower.
  
@@ -115,8 +116,7 @@ index 9241fdfb0..8482d94f0 100644
 +	  This will add Clang's Source-based Code Coverage MC/DC
 +	  instrumentation to your kernel. As of LLVM 19, certain expressions
 +	  are still not covered, and will produce build warnings when they are
-+	  encountered. Consequently, this option should not coexist with
-+	  CONFIG_WERROR=y that is the default of x86-64.
++	  encountered.
 +
 +	  "[...] if a boolean expression is embedded in the nest of another
 +	   boolean expression but separated by a non-logical operator, this is
@@ -139,12 +139,19 @@ index 9241fdfb0..8482d94f0 100644
 +	  Expressions whose number of conditions is greater than this value will
 +	  produce warnings and will not be instrumented.
 +
++	  Since MC/DC implementation utilizes bitmaps to track the execution of
++	  test vectors, more memory is consumed if larger decisions are getting
++	  counted. The maximum value supported by Clang is 32767. In practice,
++	  the working maximum for Linux kernel depends on the version and
++	  configuration and is much smaller (for example, 47 as for defconfig of
++	  v6.11). Otherwise the kernel image size limit will be exceeded.
++
  endmenu
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index b468856b8..afc94e92d 100644
+index 5bf907575..36d1c41f4 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
-@@ -169,6 +169,18 @@ _c_flags += $(if $(patsubst n%,, \
+@@ -148,6 +148,18 @@ _c_flags += $(if $(patsubst n%,, \
  		$(CFLAGS_LLVM_COV))
  endif
  

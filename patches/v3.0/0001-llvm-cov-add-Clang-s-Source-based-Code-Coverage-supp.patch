@@ -1,4 +1,4 @@
-From 39d7bd367979623699d4866ad088445f28647abc Mon Sep 17 00:00:00 2001
+From 5f342fc9b1b53c03a160d34a46d12820912c70fd Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:48:03 -0500
 Subject: [PATCH v3 1/4] llvm-cov: add Clang's Source-based Code Coverage
@@ -56,28 +56,29 @@ Link: https://lore.kernel.org/lkml/20210407211704.367039-1-morbo@google.com/ [2]
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
 Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
 Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
 ---
  Makefile                          |   3 +
  arch/Kconfig                      |   1 +
  include/asm-generic/vmlinux.lds.h |  36 +++++
  kernel/Makefile                   |   1 +
- kernel/llvm-cov/Kconfig           |  64 ++++++++
- kernel/llvm-cov/Makefile          |   5 +
- kernel/llvm-cov/fs.c              | 253 ++++++++++++++++++++++++++++++
- kernel/llvm-cov/llvm-cov.h        | 156 ++++++++++++++++++
+ kernel/llvm-cov/Kconfig           |  75 +++++++++
+ kernel/llvm-cov/Makefile          |   4 +
+ kernel/llvm-cov/fs.c              | 243 ++++++++++++++++++++++++++++++
+ kernel/llvm-cov/llvm-cov.h        | 159 +++++++++++++++++++
  scripts/Makefile.lib              |  11 ++
  scripts/mod/modpost.c             |   2 +
- 10 files changed, 532 insertions(+)
+ 10 files changed, 535 insertions(+)
  create mode 100644 kernel/llvm-cov/Kconfig
  create mode 100644 kernel/llvm-cov/Makefile
  create mode 100644 kernel/llvm-cov/fs.c
  create mode 100644 kernel/llvm-cov/llvm-cov.h
 
 diff --git a/Makefile b/Makefile
-index 34bd1d5f9..323af7343 100644
+index 187a4ce27..c4fe708e9 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -738,6 +738,9 @@ endif # KBUILD_EXTMOD
+@@ -736,6 +736,9 @@ endif # KBUILD_EXTMOD
  # Defaults to vmlinux, but the arch makefile usually adds further targets
  all: vmlinux
  
@@ -88,10 +89,10 @@ index 34bd1d5f9..323af7343 100644
  ifdef CONFIG_CC_IS_GCC
  CFLAGS_GCOV	+= -fno-tree-loop-im
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 975dd22a2..0727265f6 100644
+index 98157b38f..a664a1446 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -1601,6 +1601,7 @@ config ARCH_HAS_KERNEL_FPU_SUPPORT
+@@ -1626,6 +1626,7 @@ config ARCH_HAS_KERNEL_FPU_SUPPORT
  	  the kernel, as described in Documentation/core-api/floating-point.rst.
  
  source "kernel/gcov/Kconfig"
@@ -100,10 +101,10 @@ index 975dd22a2..0727265f6 100644
  source "scripts/gcc-plugins/Kconfig"
  
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 1ae447931..82f5badbd 100644
+index eeadbaecc..c8a333157 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
-@@ -334,6 +334,42 @@
+@@ -335,6 +335,42 @@
  #define THERMAL_TABLE(name)
  #endif
  
@@ -147,38 +148,50 @@ index 1ae447931..82f5badbd 100644
  	STRUCT_ALIGN();							\
  	__dtb_start = .;						\
 diff --git a/kernel/Makefile b/kernel/Makefile
-index 3c13240df..773e6a9ee 100644
+index 87866b037..ea63bec02 100644
 --- a/kernel/Makefile
 +++ b/kernel/Makefile
-@@ -117,6 +117,7 @@ obj-$(CONFIG_HAVE_STATIC_CALL) += static_call.o
+@@ -116,6 +116,7 @@ obj-$(CONFIG_SHADOW_CALL_STACK) += scs.o
+ obj-$(CONFIG_HAVE_STATIC_CALL) += static_call.o
  obj-$(CONFIG_HAVE_STATIC_CALL_INLINE) += static_call_inline.o
  obj-$(CONFIG_CFI_CLANG) += cfi.o
- obj-$(CONFIG_NUMA) += numa.o
 +obj-$(CONFIG_LLVM_COV_KERNEL) += llvm-cov/
  
  obj-$(CONFIG_PERF_EVENTS) += events/
  
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
 new file mode 100644
-index 000000000..9241fdfb0
+index 000000000..e0533be92
 --- /dev/null
 +++ b/kernel/llvm-cov/Kconfig
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,75 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +menu "Clang's source-based kernel coverage measurement (EXPERIMENTAL)"
 +
 +config ARCH_HAS_LLVM_COV
 +	bool
++	help
++	  An architecture can select this when it can successfully build and run
++	  with CONFIG_LLVM_COV_KERNEL. This typically requires (1) disabling
++	  instrumentation for object files that otherwise result in build
++	  failures and (2) including LLVM_COV_DATA in the linker script so that
++	  relevant sections are placed correctly into vmlinux.
 +
 +config ARCH_HAS_LLVM_COV_PROFILE_ALL
 +	bool
++	help
++	  An architecture can select this when it can successfully build and run
++	  with CONFIG_LLVM_COV_PROFILE_ALL. This typically requires
++	  (1) disabling instrumentation for object files that otherwise result
++	  in build failures and (2) including LLVM_COV_DATA in the linker script
++	  so that relevant sections are placed correctly into vmlinux.
 +
 +config LLVM_COV_KERNEL
 +	bool "Enable Clang's source-based kernel coverage measurement"
 +	depends on DEBUG_FS
 +	depends on ARCH_HAS_LLVM_COV
 +	depends on CC_IS_CLANG && CLANG_VERSION >= 180000
-+	default n
++	depends on !GCOV_KERNEL
 +	help
 +	  This option enables Clang's Source-based Code Coverage.
 +
@@ -218,7 +231,6 @@ index 000000000..9241fdfb0
 +	depends on !COMPILE_TEST
 +	depends on LLVM_COV_KERNEL
 +	depends on ARCH_HAS_LLVM_COV_PROFILE_ALL
-+	default n
 +	help
 +	  This options activates profiling for the entire kernel.
 +
@@ -230,36 +242,25 @@ index 000000000..9241fdfb0
 +endmenu
 diff --git a/kernel/llvm-cov/Makefile b/kernel/llvm-cov/Makefile
 new file mode 100644
-index 000000000..f6a236562
+index 000000000..1a03a88c7
 --- /dev/null
 +++ b/kernel/llvm-cov/Makefile
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,4 @@
 +# SPDX-License-Identifier: GPL-2.0
-+GCOV_PROFILE		:= n
 +LLVM_COV_PROFILE	:= n
 +
 +obj-y	+= fs.o
 diff --git a/kernel/llvm-cov/fs.c b/kernel/llvm-cov/fs.c
 new file mode 100644
-index 000000000..c56f660a1
+index 000000000..363064bf9
 --- /dev/null
 +++ b/kernel/llvm-cov/fs.c
-@@ -0,0 +1,253 @@
+@@ -0,0 +1,243 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2019	Sami Tolvanen <samitolvanen@google.com>, Google, Inc.
 + * Copyright (C) 2024	Jinghao Jia   <jinghao7@illinois.edu>,   UIUC
 + * Copyright (C) 2024	Wentao Zhang  <wentaoz5@illinois.edu>,   UIUC
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
 + */
 +
 +#define pr_fmt(fmt)	"llvm-cov: " fmt
@@ -500,25 +501,15 @@ index 000000000..c56f660a1
 +module_exit(llvm_cov_exit);
 diff --git a/kernel/llvm-cov/llvm-cov.h b/kernel/llvm-cov/llvm-cov.h
 new file mode 100644
-index 000000000..d9551a685
+index 000000000..d807f1b57
 --- /dev/null
 +++ b/kernel/llvm-cov/llvm-cov.h
-@@ -0,0 +1,156 @@
+@@ -0,0 +1,159 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Copyright (C) 2019	Sami Tolvanen <samitolvanen@google.com>, Google, Inc.
 + * Copyright (C) 2024	Jinghao Jia   <jinghao7@illinois.edu>,   UIUC
 + * Copyright (C) 2024	Wentao Zhang  <wentaoz5@illinois.edu>,   UIUC
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
 + */
 +
 +#ifndef _LLVM_COV_H
@@ -555,17 +546,25 @@ index 000000000..d9551a685
 +		 (u64)'r' << 8  |	\
 +		 (u64)129)
 +
++/*
++ * Version bump in LLVM commit db7e9e68411d, in which code coverage
++ * functionality (llvm-cov) is unaffected.
++ */
 +#if defined(CONFIG_CC_IS_CLANG) && CONFIG_CLANG_VERSION >= 190000
 +#define INSTR_PROF_RAW_VERSION		10
 +#define INSTR_PROF_DATA_ALIGNMENT	8
 +#define IPVK_LAST			2
++/*
++ * Version bump in LLVM commit a50486fd736a, which adds MC/DC support.
++ * Version 9 is the minimal version of raw profile supported in kernel.
++ */
 +#elif defined(CONFIG_CC_IS_CLANG) && CONFIG_CLANG_VERSION >= 180000
 +#define INSTR_PROF_RAW_VERSION		9
 +#define INSTR_PROF_DATA_ALIGNMENT	8
 +#define IPVK_LAST			1
 +#endif
 +
-+/**
++/*
 + * struct __llvm_profile_header - represents the raw profile header data
 + * structure. Description of each member can be found here:
 + * https://llvm.org/docs/InstrProfileFormat.html#header.
@@ -584,6 +583,11 @@ index 000000000..d9551a685
 +	u64 counters_delta;
 +	u64 bitmap_delta;
 +	u64 names_delta;
++/*
++ * Version bump in LLVM commit db7e9e68411d, in which code coverage
++ * functionality (llvm-cov) is unaffected. These newly introduced
++ * fields will be populated with their default values.
++ */
 +#if defined(CONFIG_CC_IS_CLANG) && CONFIG_CLANG_VERSION >= 190000
 +	u64 num_v_tables;
 +	u64 v_names_size;
@@ -591,7 +595,7 @@ index 000000000..d9551a685
 +	u64 value_kind_last;
 +};
 +
-+/**
++/*
 + * struct __llvm_profile_data - represents the per-function control structure.
 + * Description of each member can be found here:
 + * https://llvm.org/docs/InstrProfileFormat.html#profile-metadata. To measure
@@ -661,10 +665,10 @@ index 000000000..d9551a685
 +
 +#endif /* _LLVM_COV_H */
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 207325eaf..b468856b8 100644
+index 01a9f567d..5bf907575 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
-@@ -158,6 +158,17 @@ _c_flags += $(if $(patsubst n%,, \
+@@ -137,6 +137,17 @@ _c_flags += $(if $(patsubst n%,, \
  		$(CFLAGS_GCOV))
  endif
  
@@ -683,10 +687,10 @@ index 207325eaf..b468856b8 100644
  # Enable address sanitizer flags for kernel except some files or directories
  # we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index d16d0ace2..836c2289b 100644
+index 107393a8c..9a287074c 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -743,6 +743,8 @@ static const char *const section_white_list[] =
+@@ -742,6 +742,8 @@ static const char *const section_white_list[] =
  	".gnu.lto*",
  	".discard.*",
  	".llvm.call-graph-profile",	/* call graph */

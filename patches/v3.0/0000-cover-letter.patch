@@ -1,6 +1,6 @@
-From 28b4ad5dfa7f77f490b6c321c131f7ea694d5e76 Mon Sep 17 00:00:00 2001
+From f7376044ebd1eab9aa590e327e7046793e51ec9e Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
-Date: Wed, 25 Sep 2024 14:39:04 -0500
+Date: Thu, 3 Oct 2024 02:42:06 -0500
 Subject: [PATCH v3 0/4] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
 
 This series adds support for building x86-64 kernels with Clang's Source-
@@ -128,9 +128,7 @@ due to kernel size. As of LLVM 19 the max number of conditions possible is
 32767.
 
 As of LLVM 19, certain expressions are still not covered, and will produce
-build warnings when they are encountered. Consequently, to measure kernel's
-MC/DC, CONFIG_WERROR has to be disabled at this moment for successfully
-build the kernel.
+build warnings when they are encountered:
 
 "[...] if a boolean expression is embedded in the nest of another boolean
  expression but separated by a non-logical operator, this is also not
@@ -152,9 +150,15 @@ build the kernel.
 ---
 v2 -> v3:
 
-* No functional changes.
-* Rebased onto v6.11 from v6.11-rc6.
-* Add notes about CONFIG_WERROR.
+* Rebased onto v6.12-rc1 from v6.11-rc6.
+* llvm-cov:
+  * Improve documentation regarding LLVM raw profile version.
+  * Remove license boilerplate text.
+* Kconfig:
+  * Make LLVM_COV_KERNEL and GCOV_KERNEL exclusive.
+  * Improve documentation for ARCH_HAS_LLVM_COV,
+    ARCH_HAS_LLVM_COV_PROFILE_ALL and LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS.
+  * Remove "default n".
 
 ---
 
@@ -171,13 +175,13 @@ Wentao Zhang (4):
  arch/x86/kernel/vmlinux.lds.S     |   2 +
  include/asm-generic/vmlinux.lds.h |  36 +++++
  kernel/Makefile                   |   1 +
- kernel/llvm-cov/Kconfig           | 101 ++++++++++++
- kernel/llvm-cov/Makefile          |   5 +
- kernel/llvm-cov/fs.c              | 253 ++++++++++++++++++++++++++++++
- kernel/llvm-cov/llvm-cov.h        | 156 ++++++++++++++++++
+ kernel/llvm-cov/Kconfig           | 118 +++++++++++++++
+ kernel/llvm-cov/Makefile          |   4 +
+ kernel/llvm-cov/fs.c              | 243 ++++++++++++++++++++++++++++++
+ kernel/llvm-cov/llvm-cov.h        | 159 +++++++++++++++++++
  scripts/Makefile.lib              |  23 +++
  scripts/mod/modpost.c             |   2 +
- 13 files changed, 593 insertions(+), 1 deletion(-)
+ 13 files changed, 602 insertions(+), 1 deletion(-)
  create mode 100644 kernel/llvm-cov/Kconfig
  create mode 100644 kernel/llvm-cov/Makefile
  create mode 100644 kernel/llvm-cov/fs.c

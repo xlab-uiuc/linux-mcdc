@@ -1,4 +1,4 @@
-From 5344da08af40fa40e634076084967e7ef7407d16 Mon Sep 17 00:00:00 2001
+From ce63e024465d324471c4823f08b5c29514edbddd Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:48:53 -0500
 Subject: [PATCH v3 3/4] x86: disable llvm-cov instrumentation
@@ -13,6 +13,7 @@ x86/curve25519 - disable gcov").
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
 Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
 Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
 ---
  arch/x86/crypto/Makefile | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
