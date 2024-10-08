@@ -1,7 +1,7 @@
-From f7376044ebd1eab9aa590e327e7046793e51ec9e Mon Sep 17 00:00:00 2001
+From fba32f3502243c3f1bcb967667f6618897b8bf80 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
-Date: Thu, 3 Oct 2024 02:42:06 -0500
-Subject: [PATCH v3 0/4] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
+Date: Tue, 8 Oct 2024 16:51:11 -0500
+Subject: [PATCH v3 0/5] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
 
 This series adds support for building x86-64 kernels with Clang's Source-
 based Code Coverage[1] in order to facilitate Modified Condition/Decision
@@ -150,7 +150,7 @@ build warnings when they are encountered:
 ---
 v2 -> v3:
 
-* Rebased onto v6.12-rc1 from v6.11-rc6.
+* Rebased onto v6.12-rc2 from v6.11-rc6.
 * llvm-cov:
   * Improve documentation regarding LLVM raw profile version.
   * Remove license boilerplate text.
@@ -162,12 +162,14 @@ v2 -> v3:
 
 ---
 
-Wentao Zhang (4):
+Wentao Zhang (5):
   llvm-cov: add Clang's Source-based Code Coverage support
   llvm-cov: add Clang's MC/DC support
   x86: disable llvm-cov instrumentation
   x86: enable llvm-cov support
+  MAINTAINERS: add "LLVM-COV BASED KERNEL PROFILING" entry
 
+ MAINTAINERS                       |   6 +
  Makefile                          |   9 ++
  arch/Kconfig                      |   1 +
  arch/x86/Kconfig                  |   2 +
@@ -181,7 +183,7 @@ Wentao Zhang (4):
  kernel/llvm-cov/llvm-cov.h        | 159 +++++++++++++++++++
  scripts/Makefile.lib              |  23 +++
  scripts/mod/modpost.c             |   2 +
- 13 files changed, 602 insertions(+), 1 deletion(-)
+ 14 files changed, 608 insertions(+), 1 deletion(-)
  create mode 100644 kernel/llvm-cov/Kconfig
  create mode 100644 kernel/llvm-cov/Makefile
  create mode 100644 kernel/llvm-cov/fs.c

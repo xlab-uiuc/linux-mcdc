@@ -1,7 +1,7 @@
-From 5f342fc9b1b53c03a160d34a46d12820912c70fd Mon Sep 17 00:00:00 2001
+From c2d7749054577e985347caabfbb21bf36af93551 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:48:03 -0500
-Subject: [PATCH v3 1/4] llvm-cov: add Clang's Source-based Code Coverage
+Subject: [PATCH v3 1/5] llvm-cov: add Clang's Source-based Code Coverage
  support
 
 Add infrastructure to support Clang's source-based code coverage [1]. This
@@ -75,7 +75,7 @@ Reviewed-by: Nathan Chancellor <nathan@kernel.org>
  create mode 100644 kernel/llvm-cov/llvm-cov.h
 
 diff --git a/Makefile b/Makefile
-index 187a4ce27..c4fe708e9 100644
+index c5493c0c0..1823f04fb 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -736,6 +736,9 @@ endif # KBUILD_EXTMOD
@@ -89,10 +89,10 @@ index 187a4ce27..c4fe708e9 100644
  ifdef CONFIG_CC_IS_GCC
  CFLAGS_GCOV	+= -fno-tree-loop-im
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 98157b38f..a664a1446 100644
+index 8af374ea1..6abf9dc2a 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -1626,6 +1626,7 @@ config ARCH_HAS_KERNEL_FPU_SUPPORT
+@@ -1642,6 +1642,7 @@ config ARCH_HAS_KERNEL_FPU_SUPPORT
  	  the kernel, as described in Documentation/core-api/floating-point.rst.
  
  source "kernel/gcov/Kconfig"

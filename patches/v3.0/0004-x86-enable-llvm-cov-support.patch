@@ -1,7 +1,7 @@
-From f7376044ebd1eab9aa590e327e7046793e51ec9e Mon Sep 17 00:00:00 2001
+From d9d79d28f719b831d4cd2bc0d5031cfe0d01aedd Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:49:06 -0500
-Subject: [PATCH v3 4/4] x86: enable llvm-cov support
+Subject: [PATCH v3 4/5] x86: enable llvm-cov support
 
 Set ARCH_HAS_* options to "y" in kconfig and include sections related to
 llvm-cov in vmlinux.

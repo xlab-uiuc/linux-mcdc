@@ -1,7 +1,7 @@
-From 55a288a8fe563a6cc93675ea1fce6bf23bd74b13 Mon Sep 17 00:00:00 2001
+From 5f7e376a3d4974b54c075dcc5094df7f30c44863 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:49:24 -0500
-Subject: [PATCH v3 2/4] llvm-cov: add Clang's MC/DC support
+Subject: [PATCH v3 2/5] llvm-cov: add Clang's MC/DC support
 
 Add infrastructure to enable Clang's Modified Condition/Decision Coverage
 (MC/DC) [1].
@@ -79,7 +79,7 @@ Reviewed-by: Nathan Chancellor <nathan@kernel.org>
  3 files changed, 61 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index c4fe708e9..0e826eaed 100644
+index 1823f04fb..e03d16c16 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -739,6 +739,12 @@ all: vmlinux
