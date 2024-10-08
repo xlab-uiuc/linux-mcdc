@@ -1,7 +1,7 @@
-From e7d38a2115b9c1041dcda404f102888c9894da10 Mon Sep 17 00:00:00 2001
+From 5f7e376a3d4974b54c075dcc5094df7f30c44863 Mon Sep 17 00:00:00 2001
 From: Wentao Zhang <wentaoz5@illinois.edu>
 Date: Fri, 30 Aug 2024 14:49:24 -0500
-Subject: [PATCH v2 2/4] llvm-cov: add Clang's MC/DC support
+Subject: [PATCH v3 2/5] llvm-cov: add Clang's MC/DC support
 
 Add infrastructure to enable Clang's Modified Condition/Decision Coverage
 (MC/DC) [1].
@@ -71,17 +71,18 @@ Link: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#mc-dc-instrumenta
 Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
 Reviewed-by: Chuck Wolber <chuck.wolber@boeing.com>
 Tested-by: Chuck Wolber <chuck.wolber@boeing.com>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
 ---
  Makefile                |  6 ++++++
- kernel/llvm-cov/Kconfig | 36 ++++++++++++++++++++++++++++++++++++
+ kernel/llvm-cov/Kconfig | 43 +++++++++++++++++++++++++++++++++++++++++
  scripts/Makefile.lib    | 12 ++++++++++++
- 3 files changed, 54 insertions(+)
+ 3 files changed, 61 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 51498134c..1185b38d6 100644
+index 1823f04fb..e03d16c16 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -740,6 +740,12 @@ all: vmlinux
+@@ -739,6 +739,12 @@ all: vmlinux
  CFLAGS_LLVM_COV := -fprofile-instr-generate -fcoverage-mapping
  export CFLAGS_LLVM_COV
  
@@ -95,10 +96,10 @@ index 51498134c..1185b38d6 100644
  ifdef CONFIG_CC_IS_GCC
  CFLAGS_GCOV	+= -fno-tree-loop-im
 diff --git a/kernel/llvm-cov/Kconfig b/kernel/llvm-cov/Kconfig
-index 9241fdfb0..66259e1f2 100644
+index e0533be92..4f0290753 100644
 --- a/kernel/llvm-cov/Kconfig
 +++ b/kernel/llvm-cov/Kconfig
-@@ -61,4 +61,40 @@ config LLVM_COV_PROFILE_ALL
+@@ -72,4 +72,47 @@ config LLVM_COV_PROFILE_ALL
  	  Note that a kernel compiled with profiling flags will be significantly
  	  larger and run slower.
  
@@ -138,12 +139,19 @@ index 9241fdfb0..66259e1f2 100644
 +	  Expressions whose number of conditions is greater than this value will
 +	  produce warnings and will not be instrumented.
 +
++	  Since MC/DC implementation utilizes bitmaps to track the execution of
++	  test vectors, more memory is consumed if larger decisions are getting
++	  counted. The maximum value supported by Clang is 32767. In practice,
++	  the working maximum for Linux kernel depends on the version and
++	  configuration and is much smaller (for example, 47 as for defconfig of
++	  v6.11). Otherwise the kernel image size limit will be exceeded.
++
  endmenu
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index b468856b8..afc94e92d 100644
+index 5bf907575..36d1c41f4 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
-@@ -169,6 +169,18 @@ _c_flags += $(if $(patsubst n%,, \
+@@ -148,6 +148,18 @@ _c_flags += $(if $(patsubst n%,, \
  		$(CFLAGS_LLVM_COV))
  endif
  
