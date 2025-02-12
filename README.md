@@ -67,6 +67,19 @@ extend it.
 
 ## FAQ
 
+- Errors like the below screenshots:
+
+    <details><summary>Expand/Collapse</summary>
+
+    <img src="error1_screenshot.png" alt="error1_screenshot.png">
+
+    <img src="error2_screenshot.png" alt="error2_screenshot.png">
+
+    </details>
+
+    Most likely your selected machine type is not available at the moment.
+    Check availability [here](https://www.cloudlab.us/resinfo.php).
+
 - Experiment extension: if your experiment was created no longer than 2 weeks
   ago, you can extend it for another 7 days "for free".
 
