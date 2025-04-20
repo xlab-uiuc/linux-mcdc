@@ -97,6 +97,7 @@ extend it.
   "c6420", "c6320", "c8220" etc.
 
     ```shell
+    sudo apt update
     sudo apt install cloud-guest-utils
     sudo growpart /dev/sda 3
     sudo resize2fs /dev/sda3
