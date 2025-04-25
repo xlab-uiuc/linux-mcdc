@@ -80,7 +80,7 @@ extend it.
     Most likely your selected machine type is not available at the moment.
     Check availability [here](https://www.cloudlab.us/resinfo.php).
 
-- Experiment extension: if your experiment was created no longer than 2 weeks
+- Experiment extension: if your experiment was created no longer than 1 week
   ago, you can extend it for another 7 days "for free".
 
     1. Click the "Extend" button
