@@ -1,7 +1,7 @@
-From 7c60851daae39815fa696fc2265e838b1913f7ac Mon Sep 17 00:00:00 2001
-From: Wentao Zhang <zhangwt1997@gmail.com>
-Date: Wed, 4 Sep 2024 18:13:07 -0500
-Subject: [PATCH v2 0/4] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
+From fba32f3502243c3f1bcb967667f6618897b8bf80 Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <wentaoz5@illinois.edu>
+Date: Tue, 8 Oct 2024 16:51:11 -0500
+Subject: [PATCH v3 0/5] Enable measuring the kernel's Source-based Code Coverage and MC/DC with Clang
 
 This series adds support for building x86-64 kernels with Clang's Source-
 based Code Coverage[1] in order to facilitate Modified Condition/Decision
@@ -148,39 +148,28 @@ build warnings when they are encountered:
 [7] https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#mc-dc-instrumentation
 
 ---
-v1 -> v2:
+v2 -> v3:
 
-* Rebased onto v6.11-rc6 from v6.11-rc4.
-* llvm-cov/Kconfig: add CONFIG_LLVM_COV_PROFILE_ALL and be consistent with
-  GCOV conventions.
-* Makefile.lib: let the default of LLVM_COV_PROFILE depend on
-  CONFIG_LLVM_COV_PROFILE_ALL instead of always being "y", and use
-  $(is-kernel-object) following 9c2d1328f88a "kbuild: provide reasonable
-  defaults for tool coverage".
-* asm-generic/vmlinux.lds.h: use macro BOUNDED_SECTION_POST_LABEL following
-  9b351be25360 "vmlinux.lds.h: add BOUNDED_SECTION* macros".
-* Makefile.lib: "basetarget" -> "target-stem" following bf48d9b756b9
-  "kbuild: change tool coverage variables to take the path relative to
-  $(obj)".
-* kernel/trace: remove "LLVM_COV_PROFILE = :n" and let user manually enable
-  it with LLVM_COV_PROFILE_ALL, if they are sure of the performance impact.
-* x86, kbuild: remove "LLVM_COV_PROFILE = :n" instances that have been
-  taken care of by $is-kernel-object. Also remove the one in
-  arch/x86/platform/efi/ as llvm-cov doesn't have const propagation issues
-  as gcov did (ac6119e7f25b "efi/x86: Disable instrumentation in the EFI
-  runtime handling code").
-* modfinal, kbuild: remove "LLVM_COV_PROFILE = :n" as llvm-cov doesn't use
-  function pointers so it doesn't have CFI-related issues like gcov did
-  (25a21fbb934a "kbuild: Disable GCOV for *.mod.o").
+* Rebased onto v6.12-rc2 from v6.11-rc6.
+* llvm-cov:
+  * Improve documentation regarding LLVM raw profile version.
+  * Remove license boilerplate text.
+* Kconfig:
+  * Make LLVM_COV_KERNEL and GCOV_KERNEL exclusive.
+  * Improve documentation for ARCH_HAS_LLVM_COV,
+    ARCH_HAS_LLVM_COV_PROFILE_ALL and LLVM_COV_KERNEL_MCDC_MAX_CONDITIONS.
+  * Remove "default n".
 
 ---
 
-Wentao Zhang (4):
+Wentao Zhang (5):
   llvm-cov: add Clang's Source-based Code Coverage support
   llvm-cov: add Clang's MC/DC support
   x86: disable llvm-cov instrumentation
   x86: enable llvm-cov support
+  MAINTAINERS: add "LLVM-COV BASED KERNEL PROFILING" entry
 
+ MAINTAINERS                       |   6 +
  Makefile                          |   9 ++
  arch/Kconfig                      |   1 +
  arch/x86/Kconfig                  |   2 +
@@ -188,13 +177,13 @@ Wentao Zhang (4):
  arch/x86/kernel/vmlinux.lds.S     |   2 +
  include/asm-generic/vmlinux.lds.h |  36 +++++
  kernel/Makefile                   |   1 +
- kernel/llvm-cov/Kconfig           | 100 ++++++++++++
- kernel/llvm-cov/Makefile          |   5 +
- kernel/llvm-cov/fs.c              | 253 ++++++++++++++++++++++++++++++
- kernel/llvm-cov/llvm-cov.h        | 156 ++++++++++++++++++
+ kernel/llvm-cov/Kconfig           | 118 +++++++++++++++
+ kernel/llvm-cov/Makefile          |   4 +
+ kernel/llvm-cov/fs.c              | 243 ++++++++++++++++++++++++++++++
+ kernel/llvm-cov/llvm-cov.h        | 159 +++++++++++++++++++
  scripts/Makefile.lib              |  23 +++
  scripts/mod/modpost.c             |   2 +
- 13 files changed, 592 insertions(+), 1 deletion(-)
+ 14 files changed, 608 insertions(+), 1 deletion(-)
  create mode 100644 kernel/llvm-cov/Kconfig
  create mode 100644 kernel/llvm-cov/Makefile
  create mode 100644 kernel/llvm-cov/fs.c

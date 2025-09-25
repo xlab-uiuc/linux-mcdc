@@ -1,0 +1,33 @@
+From fba32f3502243c3f1bcb967667f6618897b8bf80 Mon Sep 17 00:00:00 2001
+From: Wentao Zhang <wentaoz5@illinois.edu>
+Date: Tue, 8 Oct 2024 16:47:23 -0500
+Subject: [PATCH v3 5/5] MAINTAINERS: add "LLVM-COV BASED KERNEL PROFILING"
+ entry
+
+Add Wentao Zhang and Chuck Wolber as the maintainer for llvm-cov.
+
+Signed-off-by: Wentao Zhang <wentaoz5@illinois.edu>
+---
+ MAINTAINERS | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index a097afd76..55438cb90 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -13262,6 +13262,12 @@ F:	include/net/llc*
+ F:	include/uapi/linux/llc.h
+ F:	net/llc/
+ 
++LLVM-COV BASED KERNEL PROFILING
++M:	Wentao Zhang <wentaoz5@illinois.edu>
++M:	Chuck Wolber <chuck.wolber@boeing.com>
++S:	Maintained
++F:	kernel/llvm-cov/
++
+ LM73 HARDWARE MONITOR DRIVER
+ M:	Guillaume Ligneul <guillaume.ligneul@gmail.com>
+ L:	linux-hwmon@vger.kernel.org
+-- 
+2.45.2
+
