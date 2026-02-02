@@ -36,8 +36,9 @@ top-left button "Experiments". Click "Start Experiment".
 1. "Select a Profile": Click "Next"
 2. "Parameterize":
     - "Select OS image": Select an OS image
-    - "Optional physical node type": Select a machine type, e.g. "c6420",
-      "c6320", "c8220". Detailed specs of each machine type can be found
+    - "Optional physical node type": Select a cluster and a machine type,
+      e.g. "Cloudlab Clemson" -> "c6420"/"c6320"/"c8220" etc. Detailed
+      specs of each machine type can be found
       [here](https://docs.cloudlab.us/hardware.html). Machines are not always
       available, check current availability [here](https://www.cloudlab.us/resinfo.php)
       (login required).
@@ -54,9 +55,21 @@ top-left button "Experiments". Click "Start Experiment".
       ```
 
     - "Project" (if asked): Select "linux-mcdc".
-    - "Cluster" (if asked): This question appears because your chosen
-      machine type is available in multiple clusters. Just select one.
-4. "Schedule": Click "Next"
+4. "Schedule":
+    - Wait for a few seconds, in some cases, you will see warnings like the
+      below popping up:
+
+        <details><summary>Expand/Collapse</summary>
+
+        <img src="warning_screenshot.png" alt="warning_screenshot.png">
+
+        It means your machine type is only available for a short while or
+        not available at all. Check availability [here](https://www.cloudlab.us/resinfo.php)
+        and try a different machine type.
+
+        </details>
+
+    - Otherwise, click "Next"
 
 Wait for the experiment to become ready (usually taking a few minutes). Go to
 the "List View" tab, and you will find the needed `ssh` command to log in to the
@@ -67,6 +80,14 @@ extend it.
 
 ## FAQ
 
+- For what it's worth, most machines types on CloudLab are physical machines,
+  not virtual machines.
+- "What machine type should I choose?" It really depends on your needs.
+  Wentao often uses "c6420", "c6320", "c8220" because of their mediocre
+  performance and thus higher availability. They have huge RAM but are not
+  so good in terms of CPU or disk (HDDs) compared to some top-tier
+  consumer PCs. "What about GPU?" Wentao barely knows their existence.
+  Read [CloudLab hardware specs](https://docs.cloudlab.us/hardware.html).
 - Errors like the below screenshots:
 
     <details><summary>Expand/Collapse</summary>
@@ -78,7 +99,21 @@ extend it.
     </details>
 
     Most likely your selected machine type is not available at the moment.
-    Check availability [here](https://www.cloudlab.us/resinfo.php).
+    Check availability [here](https://www.cloudlab.us/resinfo.php) and try
+    a different machine type.
+
+- SSH configurations you may find helpful. `man 5 ssh_config` for their
+  purposes and security implications.
+
+    ```sshconfig
+    Host foo
+        User wtj
+        HostName node0.foo.linux-mcdc-PG0.clemson.cloudlab.us
+        IdentityFile ~/.ssh/id_rsa_cloudlab_only
+        ForwardAgent yes
+        StrictHostKeyChecking no       # <=
+        UserKnownHostsFile /dev/null   # <=
+    ```
 
 - Experiment extension: if your experiment was created no longer than 1 week
   ago, you can extend it for another 7 days "for free".
@@ -88,13 +123,13 @@ extend it.
     3. Type in your short explanation
     4. Click the "Request Extension" button
 
-  If your experiment was created more than 2 weeks ago, your extension will need
+  If your experiment was created more than 1 week ago, your extension will need
   approval from CloudLab staff, which is not guaranteed.
 
 - Disks and partitions. For some machine types the rootfs is only allocated a
   small portion of the full disk. You probably want to gain more space. For
   example the following commands can expand `/dev/sda3` as much as possible on
-  "c6420", "c6320", "c8220" etc.
+  "c6420", "c6320", "c8220" etc where `/dev/sda3` is their rootfs partition.
 
     ```shell
     sudo apt update
