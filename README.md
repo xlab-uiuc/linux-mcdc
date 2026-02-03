@@ -26,16 +26,31 @@ Example HTML coverage report:
 
 <img src="screenshot.png" width="70%">
 
+We published a paper
+"[An Open-Source Structural Coverage Tool for DO-178C Compliance](https://ieeexplore.ieee.org/abstract/document/11257174)"
+and won "The Best of Conference Award" (the first place) at
+[DASC 2025](https://2025.dasconline.org/awards/best-paper-awards).
+
+```bibtex
+@inproceedings{linux-mcdc,
+  title={An Open-Source Structural Coverage Tool for {DO-178C} Compliance},
+  author={Zhang, Wentao and Oppelt, Andrew and Jeon, Ikjun and Park, Minji and VanderLeest, Steven H. and Wolber, Chuck},
+  booktitle={AIAA DATC/IEEE 44th Digital Avionics Systems Conference (DASC '25)},
+  year={2025},
+  month=sep,
+}
+```
+
 We gave three talks in [LPC 2024](https://lpc.events/event/18/page/224-lpc-2024-overview):
 
 - [Making Linux Fly: Towards a Certified Linux Kernel](https://lpc.events/event/18/contributions/1718/) (Refereed Track)
-  [[recording](https://www.youtube.com/live/1KWkfHxTqYY?feature=shared&t=3957)]
+  [[recording](https://www.youtube.com/watch?v=5byLCfqO_w4)]
   [[slides](https://lpc.events/event/18/contributions/1718/attachments/1584/3477/LPC'24%20Fly%20(no%20animation).pdf)]
 - [Measuring and Understanding Linux Kernel Tests](https://lpc.events/event/18/contributions/1793/) (Kernel Testing & Dependability MC)
-  [[recording](https://www.youtube.com/live/kcr8NXEbzcg?feature=shared&t=9380)]
+  [[recording](https://www.youtube.com/watch?v=aVr-lyIBKzc)]
   [[slides](https://lpc.events/event/18/contributions/1793/attachments/1624/3447/LPC'24%20Linux%20Testing.pdf)]
 - [Source-based code coverage of Linux kernel](https://lpc.events/event/18/contributions/1895/) (Safe Systems with Linux MC)
-  [[recording](https://www.youtube.com/live/kcr8NXEbzcg?feature=shared&t=23820)]
+  [[recording](https://www.youtube.com/watch?v=_rMA-I69BZg)]
   [[slides](https://lpc.events/event/18/contributions/1895/attachments/1643/3462/LPC'24%20Source%20based%20(short).pdf)]
 
 We gave an [ELISA](https://elisa.tech/) seminar titled "Making Linux Fly: Towards Certified Linux
