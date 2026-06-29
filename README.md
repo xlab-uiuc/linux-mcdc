@@ -149,4 +149,33 @@ extend it.
     3. Click "Reload"
     4. If you are sure, click "Confirm"
 
-<!-- geni-get command for automation -->
+- Automation tips
+    - CloudLab instances come with `geni-get` utility installed by default
+      that can query CloudLab metadata. Example usage:
+
+        <details><summary>Expand/Collapse</summary>
+
+        ```shell
+        # Experiment name
+        geni-get slice_urn | rev | cut -d '+' -f 1 | rev
+
+        # "apt install libxml2-utils" for running commands below
+
+        # Node name, in the form of clnode<NNN>
+        geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node']/*[local-name() = 'vnode']/@name)"
+
+        # Hardware type, e.g. c6420
+        geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node']/*[local-name() = 'vnode']/@hardware_type)"
+
+        # Predictable domain name, in the form of node<N>.<experiment>.<project>.<cluster>.cloudlab.us
+        geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node']/*[local-name() = 'host']/@name)"
+
+        # IP address
+        geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node']/*[local-name() = 'host']/@ipv4)"
+        ```
+
+        </details>
+
+    - [CloudLab portal API](https://docs.cloudlab.us/advanced-topics.html#%28part._portal-api%29) for managing instances programmatically.
+    - Browser extension: https://github.com/yimingsu01/cloudlab-extension
+    - Misc vibe-coded [user scripts](./user-scripts)
