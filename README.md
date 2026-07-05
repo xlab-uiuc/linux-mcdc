@@ -159,19 +159,23 @@ extend it.
         # Experiment name
         geni-get slice_urn | rev | cut -d '+' -f 1 | rev
 
+        # Node number, e.g., node1
+        geni-get client_id
+
         # "apt install libxml2-utils" for running commands below
 
-        # Node name, in the form of clnode<NNN>
-        geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node']/*[local-name() = 'vnode']/@name)"
+        # Node name, e.g., c220g5-110502 or clnode151. The name pattern
+        # is hardware type dependent.
+        CLIENT_ID=$(geni-get client_id); geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node'][@client_id = '$CLIENT_ID']/*[local-name() = 'vnode']/@name)"
 
-        # Hardware type, e.g. c6420
-        geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node']/*[local-name() = 'vnode']/@hardware_type)"
+        # Hardware type, e.g., c6420
+        CLIENT_ID=$(geni-get client_id); geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node'][@client_id = '$CLIENT_ID']/*[local-name() = 'vnode']/@hardware_type)"
 
         # Predictable domain name, in the form of node<N>.<experiment>.<project>.<cluster>.cloudlab.us
-        geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node']/*[local-name() = 'host']/@name)"
+        CLIENT_ID=$(geni-get client_id); geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node'][@client_id = '$CLIENT_ID']/*[local-name() = 'host']/@name)"
 
         # IP address
-        geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node']/*[local-name() = 'host']/@ipv4)"
+        CLIENT_ID=$(geni-get client_id); geni-get portalmanifest | xmllint - --xpath "string(/*[local-name() = 'rspec']/*[local-name() = 'node'][@client_id = '$CLIENT_ID']/*[local-name() = 'host']/@ipv4)"
         ```
 
         </details>
