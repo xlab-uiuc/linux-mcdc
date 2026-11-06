@@ -18,6 +18,10 @@ project.
 **Patches can be found under [`patches/`](patches/), or join LKML discussions:
 [link](https://lore.kernel.org/lkml/20240824230641.385839-1-wentaoz5@illinois.edu/)**
 
+**Continuation in 2026 by Sasha Levin:
+[RFC](https://lore.kernel.org/lkml/20261028120034.871983-1-sashal@kernel.org/),
+[v2](https://lore.kernel.org/lkml/20261103015238.3780910-1-sashal@kernel.org/)**
+
 Follow the instructions [here](docs/measure-kernel-mcdc.md) to get started.
 
 Example text coverage report: [link](https://github.com/xlab-uiuc/linux-mcdc/actions/runs/10013137034/job/27681036852#step:8:7) (login with any GitHub account required)
