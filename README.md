@@ -1,6 +1,14 @@
 If you use VMs for experiments, consider Vagrant or similar tools for fast
 fresh VM provisioning.
 
+> [!WARNING]
+>
+> HCP Vagrant is deprecated at the end of 2026:
+> https://developer.hashicorp.com/hcp/docs/vagrant/hcp-vagrant-eol.
+> The CLI tool and workflow described below still work but the box
+> (`debian/bookworm64` in the example) needs to be downloaded from
+> somewhere else.
+
 Reference: https://wiki.debian.org/Vagrant
 
 ```shell
